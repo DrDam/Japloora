@@ -1,0 +1,5 @@
+
+How add a REST callback : 
+- Create a folder for your code
+- Create a "Controlers" folder
+- Create a Class implementing "Japloora\ControlerBase" abstract class
