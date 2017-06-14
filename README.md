@@ -1,5 +1,5 @@
 # Japloora 
-##Just Another PHP Lightweight Object Oriented RestAPI
+## Just Another PHP Lightweight Object Oriented RestAPI
 
 
 * [Introduction](#introduction)
@@ -11,7 +11,7 @@
 
 Japloora are a try to make a little API with REST-FULL capacity.
 
-###Purpose
+### Purpose
 
 The way to use are simple : 
 - A controler defined route caracteristics ( path, scheme, method, HTML parameters, callback, output format) and implement callback method responding to Request
