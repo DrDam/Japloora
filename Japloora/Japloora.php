@@ -69,24 +69,28 @@ Class Japloora {
      */
     private function discoverClasses() {
 
-        $modules = scandir(JAPLOORA_DOC_ROOT . '/modules');
-        $base = JAPLOORA_DOC_ROOT . '/modules';
+      $roots = [JAPLOORA_DOC_ROOT, __DIR__];
+
+      foreach($roots as $root) {
+        $modules = scandir($root . '/modules');
+        $base = $root . '/modules';
         foreach ($modules as $module) {
-            if ($module == '.' || $module == '..') {
+          if ($module == '.' || $module == '..') {
+            continue;
+          }
+
+          if (is_dir($base. '/' . $module . '/Controlers')) {
+            $folders = scandir($root . '/modules'. '/' . $module . '/Controlers');
+            foreach ($folders as $controllers) {
+              if ($controllers === '.' || $controllers === '..') {
                 continue;
+              }
+
+              require_once $root . '/modules'. '/' . $module . '/Controlers/' . $controllers;
             }
-   
-            if (is_dir($base. '/' . $module . '/Controlers')) {
-                $folders = scandir(JAPLOORA_DOC_ROOT . '/modules'. '/' . $module . '/Controlers');
-                foreach ($folders as $controllers) {
-                    if ($controllers === '.' || $controllers === '..') {
-                        continue;
-                    }
-                    
-                    require_once JAPLOORA_DOC_ROOT . '/modules'. '/' . $module . '/Controlers/' . $controllers;
-                }
-            }
+          }
         }
+      }
     }
 
     /**
@@ -256,13 +260,31 @@ Class Japloora {
     private function validateRouting($route_data) {
         if (!isset($route_data['strict']) || $route_data['strict'] === TRUE) {
 
-            if (isset($route_data['scheme']) && $route_data['scheme'] != $this->query_datas['Schema']) {
+
+            if (isset($route_data['scheme'])) {
+              if(!is_array($route_data['scheme'])) {
+                $schemes = array($route_data['scheme']);
+                }
+                else {
+                  $schemes = $route_data['scheme'];
+                }
+              if(!in_array($this->query_datas['Schema'], $schemes)){
                 return $this->routingError('Schema', $this->query_data['Schema']);
+              }
             }
 
-            if (isset($route_data['method']) && strtoupper($route_data['method']) != strtoupper($this->query_datas['Method'])) {
-                return $this->routingError('Method', $this->query_datas['Method']);
+            if (isset($route_data['method'])) {
+              if(!is_array($route_data['method'])) {
+                $methods = array($route_data['method']);
+              }
+              else {
+                $methods = $route_data['method'];
+              }
+              if(!in_array($this->query_datas['Method'], $methods)){
+                return $this->routingError('Method', $this->query_data['Method']);
+              }
             }
+
         }
         return [];
     }
