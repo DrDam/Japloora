@@ -57,7 +57,7 @@ Class Japloora {
     private function getQueryDatas(Request $request) {
 
         return array(
-            'Shema' => $request->getScheme(),
+            'Schema' => $request->getScheme(),
             'Method' => $request->getRealMethod(),
             'Path' => $request->getPathInfo(),
             'Query' => $request->query->all(),
@@ -155,7 +155,7 @@ Class Japloora {
                         $new_end = strlen($path) - strlen($fragment);
                         // Find more exactly path
                         if ($new_end < $end) {
-                            $validated = ($this->validateRouting($route_data) == '');
+                            $validated = ($this->validateRouting($route_data) == []);
                             $possible['route'] = $route_data;
                             $possible['class'] = $classname;
                             $end = $new_end;
@@ -164,11 +164,11 @@ Class Japloora {
                 } else {
                     //  If Route have exact definition
                     if ($route_name == $path) {
-                                    
-                        $new_validated = ($this->validateRouting($route_data) == '');
+
+                        $new_validated = ($this->validateRouting($route_data) == []);
 
                         // If They'r the firste correspondance or a more accurate
-                        if ($validated == NULL || ($validated == FALSE && $new_validated === TRUE)) {
+                        if ($validated == TRUE || ($validated == FALSE && $new_validated === TRUE)) {
                             $possible['route'] = $route_data;
                             $possible['class'] = $classname;
                             $validated = $new_validated;
@@ -205,31 +205,41 @@ Class Japloora {
                 }
             }
 
+            // Add Original Path to parameters
+            $parameters['path'] = $path;
+
             // Call the Callback
             $Controler = new $possible['class']($this->query_datas);
             $format = (isset($possible['route']['format'])) ? $possible['route']['format'] : 'JSON';
-            $this->output($Controler->{$possible['route']['callback']}($parameters), $format);
+            $this->output($Controler->{$possible['route']['callback']}($parameters, $path), $format);
+            return NULL;
+
         }
 
         // There is no rout, return 404
         core_404();
     }
 
+
+  /**
+   * @param $output_datas
+   * @param $format
+   */
     private function output($output_datas, $format) {
         if($format == 'JSON') {
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
             json_output($output_datas['datas'], $code);
         }
         else {
-            print $output_datas['datas'];
+            print $output_datas;
         }
     }
     
     /**
-     * Alert if method/shema are incorect
+     * Alert if method/schema are incorect
      * @param string $parameter
      * @param string $badvalue
-     * @return string
+     * @return array
      */
     private function routingError($parameter, $badvalue) {
         return array(
@@ -241,20 +251,20 @@ Class Japloora {
     /**
      * Validating Route
      * @param array $route_data
-     * @return string
+     * @return array
      */
     private function validateRouting($route_data) {
         if (!isset($route_data['strict']) || $route_data['strict'] === TRUE) {
 
-            if (isset($route_data['sheme']) && $route_data['sheme'] != $this->query_datas['Shema']) {
-                return $this->routingError('Shema', $this->query_data['Shema']);
+            if (isset($route_data['scheme']) && $route_data['scheme'] != $this->query_datas['Schema']) {
+                return $this->routingError('Schema', $this->query_data['Schema']);
             }
 
             if (isset($route_data['method']) && strtoupper($route_data['method']) != strtoupper($this->query_datas['Method'])) {
                 return $this->routingError('Method', $this->query_datas['Method']);
             }
         }
-        return '';
+        return [];
     }
 
     /**
@@ -278,9 +288,9 @@ Class Japloora {
             }
 
             if (isset($this->query_datas['Query'][$key])) {
-                $bindedParams[$key] = $this->query_datas['Query'][$key];
+                $bindedParams['Query'][$key] = $this->query_datas['Query'][$key];
             } else {
-                $bindedParams[$key] = NULL;
+                $bindedParams['Query'][$key] = NULL;
             }
         }
         return $bindedParams;
