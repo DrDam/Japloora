@@ -14,22 +14,6 @@ Abstract Class ControlerBase {
     protected $queryData;
 
     /**
-     * Find all controlers
-     * @return type
-     */
-    static function getChildren() {
-
-        $children = array();
-        foreach (get_declared_classes() as $class) {
-
-            if (is_subclass_of($class, 'Japloora\ControlerBase', TRUE)) {
-                $children[] = $class;
-            }
-        }
-        return $children;
-    }
-
-    /**
      * Contructors
      * @param array $queryData
      */

@@ -1,9 +1,10 @@
 <?php
 
-namespace Japloora\Authent\Controlers;
+namespace Japloora\Authent\Controler;
 
 use Japloora\ControlerBase;
-use Japloora\Authent\AuthentNegociation;
+
+use Japloora\Authent\AuthentFactory;
 
 class AuthentControler extends ControlerBase {
 
@@ -25,13 +26,20 @@ class AuthentControler extends ControlerBase {
 
   public function GenerateToken($params) {
 
+    $authentDB = AuthentFactory::connexion();
+      
     $pass = $params['Query']['Pass'];
     $login = $params['Query']['Login'];
 
-    $token_data = AuthentNegociation::authentifie($login, $pass);
-
+    $userId = $authentDB->authentifie($login, $pass);
+    if($userId === FALSE) {
+        core_403();
+    }
+    
+    $token_data = $authentDB->generateToken($userId);
+   
     // JSON OutPut need JSON Encodable Variable
-    return array('datas' => ["login" => $login, "token" => $token_data['token'], 'expiration' => $token_data['expiration']]);
+    return array('datas' => ["token" => $token_data['token'], 'expiration' => $token_data['expiration']]);
   }
 
 }

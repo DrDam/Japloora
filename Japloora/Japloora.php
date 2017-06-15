@@ -2,19 +2,21 @@
 
 namespace Japloora;
 
+define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT'] );
 require_once 'helper.inc';
 
 use Symfony\Component\HttpFoundation\Request;
 use Japloora\ControlerBase;
+use Japloora\Base;
 
 define('ROUTE_PARAMETER_REQUIRED', 1);
 define('ROUTE_PARAMETER_OPTIONAL', 0);
-define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT'] );
+
         
 /**
  * Core Object
  */
-Class Japloora {
+Class Japloora extends Base{
 
     /**
      * Datas extract from HttpFoundation Request
@@ -43,7 +45,7 @@ Class Japloora {
         $this->debug = $debug;
 
         // Autoload classes
-        $this->discoverClasses();
+        $this->discoverClasses('Controler');
 
         // prepare routing
         $this->findAllRoutes();
@@ -65,40 +67,11 @@ Class Japloora {
     }
 
     /**
-     * Class Autoloader
-     */
-    private function discoverClasses() {
-
-      $roots = [JAPLOORA_DOC_ROOT. '/modules', __DIR__];
-
-      foreach($roots as $root) {
-        $modules = scandir($root );
-        $base = $root;
-        foreach ($modules as $module) {
-          if ($module == '.' || $module == '..') {
-            continue;
-          }
-
-          if (is_dir($base. '/' . $module . '/Controlers')) {
-            $folders = scandir($base. '/' . $module . '/Controlers');
-            foreach ($folders as $controllers) {
-              if ($controllers === '.' || $controllers === '..') {
-                continue;
-              }
-
-              require_once $base. '/' . $module . '/Controlers/' . $controllers;
-            }
-          }
-        }
-      }
-    }
-
-    /**
      * Discover and reference all Routes
      */
     private function findAllRoutes() {
 
-        $defined_controlers = ControlerBase::getChildren();
+        $defined_controlers = $this->getImplementation('Controler');
         foreach ($defined_controlers as $classname) {
             $local_routes = $classname::defineRoutes();
             $routes = array();
@@ -186,7 +159,7 @@ Class Japloora {
                 }
             }
         }
-
+        
         // If there a match, use the most accurate route
         if ($possible != array() && $end != 999) {
 
@@ -213,9 +186,11 @@ Class Japloora {
             $parameters['path'] = $path;
 
             // Call the Callback
-            $Controler = new $possible['class']($this->query_datas);
+   
+            $controler = new $possible['class']($this->query_datas);
             $format = (isset($possible['route']['format'])) ? $possible['route']['format'] : 'JSON';
-            $this->output($Controler->{$possible['route']['callback']}($parameters, $path), $format);
+            $callback = $possible['route']['callback'];
+            $this->output($controler->$callback($parameters, $path), $format);
             return NULL;
 
         }
