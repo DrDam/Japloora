@@ -6,7 +6,7 @@
  * Time: 10:38
  */
 
-namespace Japloora;
+namespace Japloora\Authent;
 
 
 class AuthentNegociation {

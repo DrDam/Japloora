@@ -69,24 +69,24 @@ Class Japloora {
      */
     private function discoverClasses() {
 
-      $roots = [JAPLOORA_DOC_ROOT, __DIR__];
+      $roots = [JAPLOORA_DOC_ROOT. '/modules', __DIR__];
 
       foreach($roots as $root) {
-        $modules = scandir($root . '/modules');
-        $base = $root . '/modules';
+        $modules = scandir($root );
+        $base = $root;
         foreach ($modules as $module) {
           if ($module == '.' || $module == '..') {
             continue;
           }
 
           if (is_dir($base. '/' . $module . '/Controlers')) {
-            $folders = scandir($root . '/modules'. '/' . $module . '/Controlers');
+            $folders = scandir($base. '/' . $module . '/Controlers');
             foreach ($folders as $controllers) {
               if ($controllers === '.' || $controllers === '..') {
                 continue;
               }
 
-              require_once $root . '/modules'. '/' . $module . '/Controlers/' . $controllers;
+              require_once $base. '/' . $module . '/Controlers/' . $controllers;
             }
           }
         }

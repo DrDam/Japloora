@@ -1,9 +1,9 @@
 <?php
 
-namespace Japloora;
+namespace Japloora\Authent\Controlers;
 
 use Japloora\ControlerBase;
-use Japloora\AuthentNegociation;
+use Japloora\Authent\AuthentNegociation;
 
 class AuthentControler extends ControlerBase {
 
