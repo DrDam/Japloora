@@ -2,12 +2,14 @@
 
 namespace Japloora;
 
-require_once 'helper.inc';
+define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT']);
 
 use Symfony\Component\HttpFoundation\Request;
-use Japloora\ControlerBase;
+use Japloora\Authent\AuthentFactory;
+use Japloora\Watchdog;
+use Japloora\JSONOutput;
 use Japloora\Base;
-     
+
 /**
  * Core Object
  */
@@ -16,6 +18,7 @@ class Japloora extends Base
 
     const ROUTE_PARAMETER_REQUIRED = 1;
     const ROUTE_PARAMETER_OPTIONA = 0;
+
     /**
      * Datas extract from HttpFoundation Request
      * @var array
@@ -57,9 +60,8 @@ class Japloora extends Base
      */
     private function getQueryDatas(Request $request)
     {
-
         return array(
-            'Header' => $request->headers->all(),
+            'Headers' => $request->headers->all(),
             'Schema' => $request->getScheme(),
             'Method' => $request->getRealMethod(),
             'Path' => $request->getPathInfo(),
@@ -90,11 +92,9 @@ class Japloora extends Base
      */
     public function run()
     {
-
         if ($this->debug === true) {
-            watchdog(serialize($this->query_datas), 'QUERY DATAS');
+            Watchdog::write(serialize($this->query_datas), 'QUERY DATAS');
         }
-
         return $this->routing();
     }
 
@@ -116,7 +116,7 @@ class Japloora extends Base
         }
 
         if ($this->debug === true) {
-            watchdog($path, 'ROOTED PATH');
+            Watchdog::write($path, 'ROOTED PATH');
         }
 
         foreach ($this->routes as $classname => $routes) {
@@ -159,12 +159,12 @@ class Japloora extends Base
                 }
             }
         }
-        
+
         // If there a match, use the most accurate route
         if ($possible != array() && $end != 999) {
             // Debug
             if ($this->debug === true) {
-                watchdog($possible['class'] . '->' . $possible['route']['callback'], 'RUNABLE CALLBACK');
+                Watchdog::write($possible['class'] . '->' . $possible['route']['callback'], 'RUNABLE CALLBACK');
             }
 
             // If the best correspondance contain validation Error
@@ -181,37 +181,35 @@ class Japloora extends Base
                 }
             }
 
+            // If need Authent
+            if (isset($possible['route']['isAuthent']) && $possible['route']['isAuthent'] === true) {
+                $headers = $this->query_datas['Headers'];
+                $auth_head = $headers['authorization'];
+                $token_value = explode(' ', $auth_head[0])[1];
+                $db = AuthentFactory::connexion();
+                $bool = $db->checkTocken($token_value);
+                
+                if ($bool === false) {
+                //    JSONOutput::send403();
+                }
+            }
+
             // Add Original Path to parameters
             $parameters['path'] = $path;
 
             // Call the Callback
-   
             $controler = new $possible['class']($this->query_datas);
-            $format = (isset($possible['route']['format'])) ? $possible['route']['format'] : 'JSON';
             $callback = $possible['route']['callback'];
-            $this->output($controler->$callback($parameters, $path), $format);
-            return null;
+           
+            $output_datas = $controler->$callback($parameters, $path);
+            $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
+            JSONOutput::end($output_datas['datas'], $code);
         }
 
         // There is no rout, return 404
-        core_404();
+        JSONOutput::send404();
     }
 
-
-  /**
-   * @param $output_datas
-   * @param $format
-   */
-    private function output($output_datas, $format)
-    {
-        if ($format == 'JSON') {
-            $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
-            json_output($output_datas['datas'], $code);
-        } else {
-            print $output_datas;
-        }
-    }
-    
     /**
      * Alert if method/schema are incorect
      * @param string $parameter
@@ -220,13 +218,13 @@ class Japloora extends Base
      */
     private function routingError($parameter, $badvalue)
     {
-        return array(
+        $data = array(
             'datas' =>
             [
                 'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'
             ],
-            'code' => 405
         );
+        JSONOutput::end($data, 405);
     }
 
     /**

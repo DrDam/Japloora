@@ -3,7 +3,7 @@
 namespace Japloora\Authent\Controler;
 
 use Japloora\ControlerBase;
-
+use Japloora\JSONOutput;
 use Japloora\Authent\AuthentFactory;
 
 class AuthentControler extends ControlerBase
@@ -36,7 +36,7 @@ class AuthentControler extends ControlerBase
 
         $userId = $authentDB->authentifie($login, $pass);
         if ($userId === false) {
-            core_403();
+            JSONOutput::send403();
         }
     
         $token_data = $authentDB->generateToken($userId);

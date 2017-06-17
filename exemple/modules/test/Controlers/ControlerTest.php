@@ -15,14 +15,6 @@ class ControlerTest extends ControlerBase
                 'scheme' => 'http',
                 'method' => 'POST',
                 'callback' => 'testPost',
-                'output' => 'JSON'
-            ),
-            array(
-                'path' => 'toto',
-                'scheme' => 'http',
-                'method' => 'GET',
-                'callback' => 'testGet',
-                'output' => 'HTML'
             ),
             array(
                 'strict' => false,
@@ -50,12 +42,6 @@ class ControlerTest extends ControlerBase
     {
         // JSON OutPut need JSON Encodable Variable
         return ['datas' => ["toto" => $params]];
-    }
-
-    public function testGet($params)
-    {
-        // HTML Output Aren't transformations
-        return "<h2> Hello World </h2>";
     }
 
     public function testParameters($params, $path)
