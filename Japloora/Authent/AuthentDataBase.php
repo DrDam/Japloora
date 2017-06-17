@@ -67,7 +67,6 @@ class AuthentDataBase
 
     public function authentifie($login, $pass)
     {
-        $this->updateDataCache();
         foreach ($this->CacheDatas as $id => $datas) {
             if ($datas->login == $login && $datas->pass == $pass) {
                 return $id;

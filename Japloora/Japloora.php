@@ -59,6 +59,7 @@ class Japloora extends Base
     {
 
         return array(
+            'Header' => $request->headers->all(),
             'Schema' => $request->getScheme(),
             'Method' => $request->getRealMethod(),
             'Path' => $request->getPathInfo(),
