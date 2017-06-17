@@ -2,35 +2,40 @@
 
 namespace Japloora\Authent;
 
-class AuthentDataBase {
+class AuthentDataBase
+{
 
-    static $_instance;
-    private static $_DBFile;
+    static protected $instance;
+    private static $DBFile;
     private $CacheDatas = array();
 
-    public static function connexion() {
+    public static function connexion()
+    {
         self::$_DBFile = JAPLOORA_DOC_ROOT . '/AuthentDB/DB';
         if (!file_exists(self::$_DBFile)) {
             mkdir(JAPLOORA_DOC_ROOT . '/AuthentDB/');
             touch(self::$_DBFile);
         }
 
-        if (self::$_instance == NULL) {
+        if (self::$_instance == null) {
             self::$_instance = new self();
             return self::$_instance;
         }
     }
 
-    protected function __construct() {
+    protected function __construct()
+    {
         $this->updateDataCache();
     }
 
-    private function updateDataCache() {
+    private function updateDataCache()
+    {
         $datas = file_get_contents(self::$_DBFile);
         $this->CacheDatas = json_decode($datas);
     }
 
-    public function write($datas) {
+    public function write($datas)
+    {
         if (isset($datas->id)) {
             $this->update($datas);
         } else {
@@ -40,7 +45,8 @@ class AuthentDataBase {
         $this->updateDataCache();
     }
 
-    private function update($datas) {
+    private function update($datas)
+    {
         $this->updateDataCache();
         $id = $datas->id;
         unset($datas->id);
@@ -48,23 +54,26 @@ class AuthentDataBase {
         $this->writeDatas();
     }
 
-    private function insert($datas) {
+    private function insert($datas)
+    {
         $this->CacheDatas[] = $datas;
         $this->writeDatas();
     }
 
-    private function writeDatas() {
+    private function writeDatas()
+    {
         file_put_contents(self::$_DBFile, json_encode($this->CacheDatas));
     }
 
-    public function authentifie($login, $pass) {
+    public function authentifie($login, $pass)
+    {
         $this->updateDataCache();
         foreach ($this->CacheDatas as $id => $datas) {
             if ($datas->login == $login && $datas->pass == $pass) {
                 return $id;
             }
         }
-        return FALSE;
+        return false;
     }
 
     /**
@@ -72,7 +81,8 @@ class AuthentDataBase {
      * @param $pass
      * @return array
      */
-    public function generateToken($userId, $saveToken = TRUE) {
+    public function generateToken($userId, $saveToken = true)
+    {
         $this->updateDataCache();
 
         $user = $this->CacheDatas[$userId];
@@ -81,7 +91,7 @@ class AuthentDataBase {
         $salt = floor(time() / 1000);
         $token = md5($user->login . $md5 . $salt);
         
-        if($saveToken === TRUE) {
+        if ($saveToken === true) {
             $user->token = $token;
             $user->id = $userId;
             $this->write($user);
@@ -96,7 +106,8 @@ class AuthentDataBase {
      * @param $token
      * @return bool
      */
-    public static function checkToken($login, $token) {
+    public static function checkToken($login, $token)
+    {
 
         // Get User in DB
         $pass = "machin";
@@ -105,5 +116,4 @@ class AuthentDataBase {
 
         return ($token === $valid_token['token']);
     }
-
 }

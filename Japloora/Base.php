@@ -13,18 +13,20 @@ namespace Japloora;
  *
  * @author drdam
  */
-class Base {
+class Base
+{
     //put your code here
     
         /**
      * Find all controlers
      * @return type
      */
-    static public function getImplementation($base) {
+    public static function getImplementation($base)
+    {
 
         $children = array();
         foreach (get_declared_classes() as $class) {
-            if (is_subclass_of($class, 'Japloora\\' . $base . 'Base', TRUE)) {
+            if (is_subclass_of($class, 'Japloora\\' . $base . 'Base', true)) {
                 $children[] = $class;
             }
         }
@@ -32,32 +34,32 @@ class Base {
         return $children;
     }
     
-    static public function discoverClasses($type) {
+    public static function discoverClasses($type)
+    {
 
           $roots = [JAPLOORA_DOC_ROOT. '/modules', __DIR__];
 
-      foreach($roots as $root) {
-        $modules = scandir($root );
-        $base = $root;
-        foreach ($modules as $module) {
-          if ($module == '.' || $module == '..') {
-            continue;
-          }
+        foreach ($roots as $root) {
+            $modules = scandir($root);
+            $base = $root;
+            foreach ($modules as $module) {
+                if ($module == '.' || $module == '..') {
+                    continue;
+                }
 
-          if (is_dir($base. '/' . $module . '/' . $type)) {
+                if (is_dir($base. '/' . $module . '/' . $type)) {
+                    $folders = scandir($base. '/' . $module . '/' . $type);
+                    foreach ($folders as $file) {
+                        if ($file === '.' || $file === '..') {
+                            continue;
+                        }
                   
-            $folders = scandir($base. '/' . $module . '/' . $type);
-            foreach ($folders as $file) {
-              if ($file === '.' || $file === '..') {
-                continue;
-              }
-                  
-              if(strstr($file, $type)) {
-                require_once $base. '/' . $module . '/' . $type . '/' . $file;
-              }
+                        if (strstr($file, $type)) {
+                            require_once $base. '/' . $module . '/' . $type . '/' . $file;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-}
+    }
 }

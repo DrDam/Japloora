@@ -1,5 +1,7 @@
 <?php
 
+define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT']);
+
 /**
  * Write message to Core.log file
  * @param string $message

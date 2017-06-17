@@ -7,7 +7,7 @@ use Japloora\Japloora;
 
 $request = Request::createFromGlobals();
 
-$debug = TRUE;
+$debug = true;
 $JaplooraCore = new Japloora($request, $debug);
 
 $result = $JaplooraCore->run();

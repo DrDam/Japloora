@@ -2,37 +2,35 @@
 
 namespace Japloora;
 
-define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT'] );
 require_once 'helper.inc';
 
 use Symfony\Component\HttpFoundation\Request;
 use Japloora\ControlerBase;
 use Japloora\Base;
-
-define('ROUTE_PARAMETER_REQUIRED', 1);
-define('ROUTE_PARAMETER_OPTIONAL', 0);
-
-        
+     
 /**
  * Core Object
  */
-Class Japloora extends Base{
+class Japloora extends Base
+{
 
+    const ROUTE_PARAMETER_REQUIRED = 1;
+    const ROUTE_PARAMETER_OPTIONA = 0;
     /**
      * Datas extract from HttpFoundation Request
-     * @var array 
+     * @var array
      */
     private $query_data;
 
     /**
      * Array of all routes defined in application
-     * @var array 
+     * @var array
      */
     private $routes;
 
     /**
      * General Debug flag
-     * @var boolean 
+     * @var boolean
      */
     private $debug;
 
@@ -40,7 +38,8 @@ Class Japloora extends Base{
      * Constructor
      * @param Request $request
      */
-    public function __construct(Request $request, $debug = FALSE) {
+    public function __construct(Request $request, $debug = false)
+    {
         $this->query_datas = $this->getQueryDatas($request);
         $this->debug = $debug;
 
@@ -56,7 +55,8 @@ Class Japloora extends Base{
      * @param Request $request
      * @return array
      */
-    private function getQueryDatas(Request $request) {
+    private function getQueryDatas(Request $request)
+    {
 
         return array(
             'Schema' => $request->getScheme(),
@@ -69,7 +69,8 @@ Class Japloora extends Base{
     /**
      * Discover and reference all Routes
      */
-    private function findAllRoutes() {
+    private function findAllRoutes()
+    {
 
         $defined_controlers = $this->getImplementation('Controler');
         foreach ($defined_controlers as $classname) {
@@ -83,12 +84,13 @@ Class Japloora extends Base{
     }
 
     /**
-     * Run Core-Backen 
+     * Run Core-Backen
      * @return mixed
      */
-    public function run() {
+    public function run()
+    {
 
-        if ($this->debug === TRUE) {
+        if ($this->debug === true) {
             watchdog(serialize($this->query_datas), 'QUERY DATAS');
         }
 
@@ -96,27 +98,27 @@ Class Japloora extends Base{
     }
 
     /**
-     * Find & execute correct controler 
+     * Find & execute correct controler
      * @param string $path
      * @return mixed
      */
-    private function routing($path = NULL) {
+    private function routing($path = null)
+    {
         $possible = array();
         $end = 999;
-        $validated = NULL;
+        $validated = null;
         $response = array();
         $parameters = array();
 
-        if ($path == NULL) {
+        if ($path == null) {
             $path = $this->query_datas['Path'];
         }
 
-        if ($this->debug === TRUE) {
+        if ($this->debug === true) {
             watchdog($path, 'ROOTED PATH');
         }
 
         foreach ($this->routes as $classname => $routes) {
-
             foreach ($routes as $route_data) {
                 $route_name = $route_data['path'];
                 if (substr($route_name, 0, 1) != '/') {
@@ -125,10 +127,8 @@ Class Japloora extends Base{
 
                 // If Route contaning wild card,
                 if (substr($route_name, -1, 1) == '*') {
-
                     $fragment = substr($route_name, 0, strlen($route_name) - 1);
                     if (strstr($path, $fragment)) {
-
                         $new_end = strlen($path) - strlen($fragment);
                         // Find more exactly path
                         if ($new_end < $end) {
@@ -141,17 +141,16 @@ Class Japloora extends Base{
                 } else {
                     //  If Route have exact definition
                     if ($route_name == $path) {
-
                         $new_validated = ($this->validateRouting($route_data) == []);
 
                         // If They'r the firste correspondance or a more accurate
-                        if ($validated == TRUE || ($validated == FALSE && $new_validated === TRUE)) {
+                        if ($validated == true || ($validated == false && $new_validated === true)) {
                             $possible['route'] = $route_data;
                             $possible['class'] = $classname;
                             $validated = $new_validated;
                             $end = -1;
                             // If they'r the perfect correspondance
-                            if ($validated === TRUE) {
+                            if ($validated === true) {
                                 break;
                             }
                         }
@@ -162,14 +161,13 @@ Class Japloora extends Base{
         
         // If there a match, use the most accurate route
         if ($possible != array() && $end != 999) {
-
             // Debug
-            if ($this->debug === TRUE) {
+            if ($this->debug === true) {
                 watchdog($possible['class'] . '->' . $possible['route']['callback'], 'RUNABLE CALLBACK');
             }
 
             // If the best correspondance contain validation Error
-            if ($validated === FALSE) {
+            if ($validated === false) {
                 $this->output($this->validateRouting($possible['route']), 'JSON');
             }
 
@@ -191,8 +189,7 @@ Class Japloora extends Base{
             $format = (isset($possible['route']['format'])) ? $possible['route']['format'] : 'JSON';
             $callback = $possible['route']['callback'];
             $this->output($controler->$callback($parameters, $path), $format);
-            return NULL;
-
+            return null;
         }
 
         // There is no rout, return 404
@@ -204,12 +201,12 @@ Class Japloora extends Base{
    * @param $output_datas
    * @param $format
    */
-    private function output($output_datas, $format) {
-        if($format == 'JSON') {
+    private function output($output_datas, $format)
+    {
+        if ($format == 'JSON') {
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
             json_output($output_datas['datas'], $code);
-        }
-        else {
+        } else {
             print $output_datas;
         }
     }
@@ -220,9 +217,13 @@ Class Japloora extends Base{
      * @param string $badvalue
      * @return array
      */
-    private function routingError($parameter, $badvalue) {
+    private function routingError($parameter, $badvalue)
+    {
         return array(
-            'datas' => [ 'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'],
+            'datas' =>
+            [
+                'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'
+            ],
             'code' => 405
         );
     }
@@ -232,34 +233,30 @@ Class Japloora extends Base{
      * @param array $route_data
      * @return array
      */
-    private function validateRouting($route_data) {
-        if (!isset($route_data['strict']) || $route_data['strict'] === TRUE) {
-
-
+    private function validateRouting($route_data)
+    {
+        if (!isset($route_data['strict']) || $route_data['strict'] === true) {
             if (isset($route_data['scheme'])) {
-              if(!is_array($route_data['scheme'])) {
-                $schemes = array($route_data['scheme']);
+                if (!is_array($route_data['scheme'])) {
+                    $schemes = array($route_data['scheme']);
+                } else {
+                    $schemes = $route_data['scheme'];
                 }
-                else {
-                  $schemes = $route_data['scheme'];
+                if (!in_array($this->query_datas['Schema'], $schemes)) {
+                    return $this->routingError('Schema', $this->query_data['Schema']);
                 }
-              if(!in_array($this->query_datas['Schema'], $schemes)){
-                return $this->routingError('Schema', $this->query_data['Schema']);
-              }
             }
 
             if (isset($route_data['method'])) {
-              if(!is_array($route_data['method'])) {
-                $methods = array($route_data['method']);
-              }
-              else {
-                $methods = $route_data['method'];
-              }
-              if(!in_array($this->query_datas['Method'], $methods)){
-                return $this->routingError('Method', $this->query_data['Method']);
-              }
+                if (!is_array($route_data['method'])) {
+                    $methods = array($route_data['method']);
+                } else {
+                    $methods = $route_data['method'];
+                }
+                if (!in_array($this->query_datas['Method'], $methods)) {
+                    return $this->routingError('Method', $this->query_data['Method']);
+                }
             }
-
         }
         return [];
     }
@@ -270,7 +267,8 @@ Class Japloora extends Base{
      * @return array
      * @throws \Exception
      */
-    private function bindParameters($parameters = array()) {
+    private function bindParameters($parameters = array())
+    {
         $bindedParams = array();
 
         foreach ($parameters as $key => $value) {
@@ -287,10 +285,9 @@ Class Japloora extends Base{
             if (isset($this->query_datas['Query'][$key])) {
                 $bindedParams['Query'][$key] = $this->query_datas['Query'][$key];
             } else {
-                $bindedParams['Query'][$key] = NULL;
+                $bindedParams['Query'][$key] = null;
             }
         }
         return $bindedParams;
     }
-
 }

@@ -3,9 +3,12 @@
 namespace CNF;
 
 use Japloora\ControlerBase;
-class ControlerTest extends ControlerBase {
 
-    static function defineRoutes() {
+class ControlerTest extends ControlerBase
+{
+
+    public static function defineRoutes()
+    {
         return array(
             array(
                 'path' => 'toto',
@@ -22,7 +25,7 @@ class ControlerTest extends ControlerBase {
                 'output' => 'HTML'
             ),
             array(
-                'strict' => FALSE,
+                'strict' => false,
                 'path' => 'toto/*',
                 'scheme' => 'http',
                 'method' => 'GET',
@@ -34,7 +37,7 @@ class ControlerTest extends ControlerBase {
             ),
             // Most accurate route
             array(
-              'strict' => FALSE,
+              'strict' => false,
               'path' => 'toto/titi',
               'scheme' => 'http',
               'method' => 'GET',
@@ -43,19 +46,21 @@ class ControlerTest extends ControlerBase {
         );
     }
 
-    public function testPost($params) {
+    public function testPost($params)
+    {
         // JSON OutPut need JSON Encodable Variable
         return ['datas' => ["toto" => $params]];
     }
 
-    public function testGet($params) {
+    public function testGet($params)
+    {
         // HTML Output Aren't transformations
         return "<h2> Hello World </h2>";
     }
 
-    public function testParameters($params, $path) {
+    public function testParameters($params, $path)
+    {
       // $params = ['Param1' => "value param" , 'Param2' => "value param" ];
-      return array('datas' => ["out" => $params]);
+        return array('datas' => ["out" => $params]);
     }
-
 }
