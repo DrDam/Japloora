@@ -230,7 +230,7 @@ class Japloora extends Base
                 'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'
             ],
         );
-        JSONOutput::end($data, 405);
+        JSONOutput::end($data, 422);
     }
 
     /**

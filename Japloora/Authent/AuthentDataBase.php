@@ -35,12 +35,13 @@ class AuthentDataBase
     public function write($datas)
     {
         if (isset($datas->id)) {
-            $this->update($datas);
+            $out = $this->update($datas);
         } else {
-            $this->insert($datas);
+            $out = $this->insert($datas);
         }
 
         $this->updateDataCache();
+        return $out;
     }
 
     private function update($datas)
@@ -50,12 +51,14 @@ class AuthentDataBase
         unset($datas->id);
         $this->CacheDatas[$id] = $datas;
         $this->writeDatas();
+        return '';
     }
 
     private function insert($datas)
     {
         $this->CacheDatas[] = $datas;
         $this->writeDatas();
+        return count($this->CacheDatas)-1;
     }
 
     private function writeDatas()
