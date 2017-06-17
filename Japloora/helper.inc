@@ -17,6 +17,7 @@ function watchdog($message, $type = NULL) {
  * @return string
  */
 function core_404() {
+    header('Content-Type: application/json');
     json_output(array('page'=>'404'), 404);
 }
 
@@ -25,6 +26,7 @@ function core_404() {
  * @return string
  */
 function core_403() {
+    header('Content-Type: application/json');
     json_output(array('page'=>'403'), 403);
 }
 
@@ -55,6 +57,7 @@ function stringToAssiociativ($string, $line_marker, $key_value_separator) {
  * @param number $http_code
  */
 function json_output($json_data = array(), $http_code = 200) {
+    header('Content-Type: application/json');
     http_response_code($http_code);
     die(json_encode($json_data));
 }

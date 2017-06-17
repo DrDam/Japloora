@@ -11,15 +11,15 @@ class AuthentDataBase
 
     public static function connexion()
     {
-        self::$_DBFile = JAPLOORA_DOC_ROOT . '/AuthentDB/DB';
-        if (!file_exists(self::$_DBFile)) {
+        self::$DBFile = JAPLOORA_DOC_ROOT . '/AuthentDB/DB';
+        if (!file_exists(self::$DBFile)) {
             mkdir(JAPLOORA_DOC_ROOT . '/AuthentDB/');
-            touch(self::$_DBFile);
+            touch(self::$DBFile);
         }
 
-        if (self::$_instance == null) {
-            self::$_instance = new self();
-            return self::$_instance;
+        if (self::$instance == null) {
+            self::$instance = new self();
+            return self::$instance;
         }
     }
 
@@ -30,7 +30,7 @@ class AuthentDataBase
 
     private function updateDataCache()
     {
-        $datas = file_get_contents(self::$_DBFile);
+        $datas = file_get_contents(self::$DBFile);
         $this->CacheDatas = json_decode($datas);
     }
 
@@ -62,7 +62,7 @@ class AuthentDataBase
 
     private function writeDatas()
     {
-        file_put_contents(self::$_DBFile, json_encode($this->CacheDatas));
+        file_put_contents(self::$DBFile, json_encode($this->CacheDatas));
     }
 
     public function authentifie($login, $pass)

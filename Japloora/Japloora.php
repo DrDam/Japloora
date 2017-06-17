@@ -275,10 +275,10 @@ class Japloora extends Base
             // Manage default_value
             if (is_numeric($key)) {
                 $key = $value;
-                $value = ROUTE_PARAMETER_REQUIRED;
+                $value = self::ROUTE_PARAMETER_REQUIRED;
             }
 
-            if ($value === ROUTE_PARAMETER_REQUIRED && !isset($this->query_datas['Query'][$key])) {
+            if ($value === self::ROUTE_PARAMETER_REQUIRED && !isset($this->query_datas['Query'][$key])) {
                 throw new \Exception('The route you\'ll try accessing need "' . $key . '" parameter.');
             }
 
