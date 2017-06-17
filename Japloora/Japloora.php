@@ -181,27 +181,33 @@ class Japloora extends Base
                 }
             }
 
+            // Add Original Path to parameters
+            $parameters['path'] = $path;
+            
             // If need Authent
             if (isset($possible['route']['isAuthent']) && $possible['route']['isAuthent'] === true) {
                 $headers = $this->query_datas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentFactory::connexion();
-                $bool = $db->checkTocken($token_value);
+                $validation = $db->checkToken($token_value);
                 
-                if ($bool === false) {
-                //    JSONOutput::send403();
+                
+                if ($validation['status'] === false) {
+                    JSONOutput::send403($validation['message']);
+                } else {
+                    // Add User_id to parameters
+                    $parameters['user_id'] = $validation['user_id'];
                 }
             }
 
-            // Add Original Path to parameters
-            $parameters['path'] = $path;
+
 
             // Call the Callback
             $controler = new $possible['class']($this->query_datas);
             $callback = $possible['route']['callback'];
            
-            $output_datas = $controler->$callback($parameters, $path);
+            $output_datas = $controler->$callback($parameters);
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
             JSONOutput::end($output_datas['datas'], $code);
         }

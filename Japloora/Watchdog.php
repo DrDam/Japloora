@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace Japloora;
 
 /**
@@ -15,10 +9,15 @@ namespace Japloora;
  */
 class Watchdog
 {
-    //put your code here
-    
-    public static function write($message, $type = NULL) {
-        $string = ($type != NULL) ? $type . " :: " . $message : $message;
-        return error_log($string);
+
+    /**
+     * Generic Debug Output
+     * @param type $message
+     * @param type $type
+     */
+    public static function write($message, $type = null)
+    {
+        $string = ($type != null) ? $type . " :: " . $message : $message;
+        error_log($string);
     }
 }

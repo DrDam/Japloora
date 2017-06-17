@@ -4,33 +4,31 @@ namespace Japloora\Authent;
 
 class AuthentDataBase
 {
-
-    static protected $instance;
-    private static $DBFile;
+    private $DBFile = JAPLOORA_DOC_ROOT . '/AuthentDB/DB';
     private $CacheDatas = array();
+    private static $instance;
+
 
     public static function connexion()
     {
-        self::$DBFile = JAPLOORA_DOC_ROOT . '/AuthentDB/DB';
-        if (!file_exists(self::$DBFile)) {
-            mkdir(JAPLOORA_DOC_ROOT . '/AuthentDB/');
-            touch(self::$DBFile);
-        }
-
         if (self::$instance == null) {
-            self::$instance = new self();
-            return self::$instance;
+            self::$instance = new AuthentDataBase();
         }
+        return self::$instance;
     }
-
+    
     protected function __construct()
     {
+        if (!file_exists($this->DBFile)) {
+            mkdir(JAPLOORA_DOC_ROOT . '/AuthentDB/');
+            touch($this->DBFile);
+        }
         $this->updateDataCache();
     }
 
     private function updateDataCache()
     {
-        $datas = file_get_contents(self::$DBFile);
+        $datas = file_get_contents($this->DBFile);
         $this->CacheDatas = json_decode($datas);
     }
 
@@ -62,10 +60,16 @@ class AuthentDataBase
 
     private function writeDatas()
     {
-        file_put_contents(self::$DBFile, json_encode($this->CacheDatas));
+        file_put_contents($this->DBFile, json_encode($this->CacheDatas));
     }
 
-    public function authentifie($login, $pass)
+    /**
+     * Check login/pass related
+     * @param strin $login
+     * @param strin $pass
+     * @return boolean
+     */
+    public function authentify($login, $pass)
     {
         foreach ($this->CacheDatas as $id => $datas) {
             if ($datas->login == $login && $datas->pass == $pass) {
@@ -74,45 +78,79 @@ class AuthentDataBase
         }
         return false;
     }
+    
+    public function getUser($user_id)
+    {
+        $this->updateDataCache();
+        if (isset($this->CacheDatas[$user_id])) {
+            $user = $this->CacheDatas[$user_id];
+            unset($user->token);
+            return $this->CacheDatas[$user_id];
+        }
+        return null;
+    }
 
     /**
-     * @param $login
-     * @param $pass
+     * Generate authentification token
+     * @param int $userId
+     * @param bool $saveToken
      * @return array
      */
     public function generateToken($userId, $saveToken = true)
     {
-        $this->updateDataCache();
+        $user = $this->getUser($userId);
 
-        $user = $this->CacheDatas[$userId];
-        
         $md5 = md5($user->pass);
         $salt = floor(time() / 1000);
         $token = md5($user->login . $md5 . $salt);
-        
+
         if ($saveToken === true) {
             $user->token = $token;
             $user->id = $userId;
             $this->write($user);
         }
-        
+
         $token_data = ['token' => $token, 'expiration' => ($salt + 1) * 1000];
         return $token_data;
     }
 
     /**
-     * @param $login
-     * @param $token
-     * @return bool
+     * Check authentification token
+     * @param string $token
+     * @return array
      */
-    public static function checkToken($login, $token)
+    public function checkToken($token)
     {
+        $status = false;
+        $message = '';
+        //1 Get user
+        $user_id = $this->getUserByToken($token);
 
-        // Get User in DB
-        $pass = "machin";
+        if ($user_id !== null) {
+            //2 Test if Token not expired
+            $valid_token = $this->generateToken($user_id, false);
 
-        $valid_token = self::generateToken($login, $pass);
+            if ($valid_token != null && $token === $valid_token['token']) {
+                return ['status' => true, 'user_id' => $user_id];
+            } else {
+                $message = 'Exprired Token';
+            }
+        }
+        return ['status' => $status, 'message' => $message];
+    }
 
-        return ($token === $valid_token['token']);
+    /**
+     * Extract User who generate tocken
+     * @param string $token
+     * @return int|null
+     */
+    private function getUserByToken($token)
+    {
+        foreach ($this->CacheDatas as $key => $user) {
+            if ($user->token === $token) {
+                return $key;
+            }
+        }
+        return null;
     }
 }

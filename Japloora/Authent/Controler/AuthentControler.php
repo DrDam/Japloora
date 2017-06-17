@@ -34,7 +34,7 @@ class AuthentControler extends ControlerBase
         $pass = $params['Query']['Pass'];
         $login = $params['Query']['Login'];
 
-        $userId = $authentDB->authentifie($login, $pass);
+        $userId = $authentDB->authentify($login, $pass);
         if ($userId === false) {
             JSONOutput::send403();
         }

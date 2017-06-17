@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace Japloora;
 
 /**
@@ -15,23 +9,39 @@ namespace Japloora;
  */
 class JSONOutput
 {
-    static public function end($datas = [], $http_code) {
+    /**
+     * Output JSON
+     * @param mixed $datas
+     * @param int $http_code
+     */
+    public static function end($datas, $http_code = 200)
+    {
         header('Content-Type: application/json');
         http_response_code($http_code);
         print json_encode($datas);
         exit;
     }
     
-    static public function send404() {
+    /**
+     * Output a 404 message
+     */
+    public static function send404()
+    {
         $datas = [
             'error' => "Ressource Not Found",
         ];
         self::end($datas, 404);
     }
     
-    static public function send403() {
+    /**
+     * Output a 403 message
+     * @param string $message
+     */
+    public static function send403($message = '')
+    {
+        
         $datas = [
-            'error' => "Your are not authorize to access on this ressource",
+            'error' => ($message != '') ? $message : "Your are not authorize to access on this ressource",
         ];
         self::end($datas, 404);
     }
