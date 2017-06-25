@@ -2,9 +2,10 @@
 
 namespace Japloora\Authent;
 
+use Japloora\Authent\AuthentBase;
+
 class AuthentDataBase
 {
-    private $DBFile = JAPLOORA_DOC_ROOT . '/AuthentDB/DB';
     private $CacheDatas = array();
     private static $instance;
 
@@ -19,22 +20,26 @@ class AuthentDataBase
     
     protected function __construct()
     {
-        if (!file_exists($this->DBFile)) {
-            mkdir(JAPLOORA_DOC_ROOT . '/AuthentDB/');
-            touch($this->DBFile);
-        }
+
         $this->updateDataCache();
+    }
+    
+    public static function hash($string) {
+        return md5($string);
     }
 
     private function updateDataCache()
     {
-        $datas = file_get_contents($this->DBFile);
+        $datas = file_get_contents(AuthentBase::getDBUser());
         $this->CacheDatas = json_decode($datas);
+        if($this->CacheDatas == null) {
+            $this->CacheDatas = [];
+        }
     }
 
     public function write($datas)
     {
-        if (isset($datas->id)) {
+        if (isset($datas->Id)) {
             $out = $this->update($datas);
         } else {
             $out = $this->insert($datas);
@@ -47,8 +52,8 @@ class AuthentDataBase
     private function update($datas)
     {
         $this->updateDataCache();
-        $id = $datas->id;
-        unset($datas->id);
+        $id = $datas->Id;
+        unset($datas->Id);
         $this->CacheDatas[$id] = $datas;
         $this->writeDatas();
         return '';
@@ -56,14 +61,15 @@ class AuthentDataBase
 
     private function insert($datas)
     {
+        $datas->Id = count($this->CacheDatas);
         $this->CacheDatas[] = $datas;
         $this->writeDatas();
-        return count($this->CacheDatas)-1;
+        return $datas->Id;
     }
 
     private function writeDatas()
     {
-        file_put_contents($this->DBFile, json_encode($this->CacheDatas));
+        file_put_contents(AuthentBase::getDBUser(), json_encode($this->CacheDatas));
     }
 
     /**
@@ -75,7 +81,7 @@ class AuthentDataBase
     public function authentify($login, $pass)
     {
         foreach ($this->CacheDatas as $id => $datas) {
-            if ($datas->login == $login && $datas->pass == $pass) {
+            if ($datas->Login == $login && $datas->Pass == self::hash($pass)) {
                 return $id;
             }
         }
@@ -103,13 +109,13 @@ class AuthentDataBase
     {
         $user = $this->getUser($userId);
 
-        $md5 = md5($user->pass);
+        $hash = self::hash($user->Pass);
         $salt = floor(time() / 1000);
-        $token = md5($user->login . $md5 . $salt);
+        $token = self::hash($user->Login . $hash . $salt);
 
         if ($saveToken === true) {
-            $user->token = $token;
-            $user->id = $userId;
+            $user->Token = $token;
+            $user->Id = $userId;
             $this->write($user);
         }
 

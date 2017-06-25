@@ -5,6 +5,7 @@ namespace Japloora;
 define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT']);
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Yaml\Yaml;
 use Japloora\Authent\AuthentFactory;
 use Japloora\Watchdog;
 use Japloora\JSONOutput;
@@ -43,16 +44,35 @@ class Japloora extends Base
      */
     public function __construct(Request $request, $debug = false)
     {
+        if(file_exists(JAPLOORA_DOC_ROOT . '/init/init.yml')) {
+            try {
+                $conf = Yaml::parse(file_get_contents(JAPLOORA_DOC_ROOT . '/init/init.yml'));
+            } catch (ParseException $e) {
+                printf("Unable to parse the YAML string: %s", $e->getMessage());
+            }
+            $this->initialization($conf);
+            unlink(JAPLOORA_DOC_ROOT . '/init/init.yml');
+        }
         $this->query_datas = $this->getQueryDatas($request);
         $this->debug = $debug;
 
-        // Autoload classes
+        // Autoload Controlers
         $this->discoverClasses('Controler');
 
         // prepare routing
         $this->findAllRoutes();
     }
 
+    private function initialization($conf) {
+        // Autoload Controlers
+        $this->discoverClasses('Init');
+        $initialisers = $this->getImplementation('Init');
+
+        foreach($initialisers as $initialiser) {
+            $initialiser::initialize($conf);
+        }
+    }
+    
     /**
      * Extract data from HttpFoundation Request
      * @param Request $request
@@ -200,9 +220,7 @@ class Japloora extends Base
                     $parameters['user_id'] = $validation['user_id'];
                 }
             }
-
-
-
+            
             // Call the Callback
             $controler = new $possible['class']($this->query_datas);
             $callback = $possible['route']['callback'];

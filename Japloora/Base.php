@@ -37,7 +37,7 @@ class Base
     public static function discoverClasses($type)
     {
 
-          $roots = [JAPLOORA_DOC_ROOT. '/modules', __DIR__];
+        $roots = [JAPLOORA_DOC_ROOT. '/modules', __DIR__];
 
         foreach ($roots as $root) {
             $modules = scandir($root);
