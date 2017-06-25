@@ -3,4 +3,4 @@ parameters:
     bin_dir: vendor/bin
     tasks:
       phpcs:
-        standard: Zend
+        standard: PSR2

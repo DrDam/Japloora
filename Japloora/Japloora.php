@@ -1,7 +1,12 @@
 <?php
 
+/**
+ * Japloora Core Class
+ */
+
 namespace Japloora;
 
+// Application need root folder
 define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT']);
 
 use Symfony\Component\HttpFoundation\Request;
@@ -24,7 +29,7 @@ class Japloora extends Base
      * Datas extract from HttpFoundation Request
      * @var array
      */
-    private $query_data;
+    private $queryData;
 
     /**
      * Array of all routes defined in application
@@ -44,16 +49,12 @@ class Japloora extends Base
      */
     public function __construct(Request $request, $debug = false)
     {
-        if(file_exists(JAPLOORA_DOC_ROOT . '/init/init.yml')) {
-            try {
-                $conf = Yaml::parse(file_get_contents(JAPLOORA_DOC_ROOT . '/init/init.yml'));
-            } catch (ParseException $e) {
-                printf("Unable to parse the YAML string: %s", $e->getMessage());
-            }
+        if (file_exists(JAPLOORA_DOC_ROOT . '/init/init.yml')) {
             $this->initialization($conf);
+            // Delete intialization file after first runing
             unlink(JAPLOORA_DOC_ROOT . '/init/init.yml');
         }
-        $this->query_datas = $this->getQueryDatas($request);
+        $this->queryDatas = $this->getQueryDatas($request);
         $this->debug = $debug;
 
         // Autoload Controlers
@@ -63,16 +64,29 @@ class Japloora extends Base
         $this->findAllRoutes();
     }
 
-    private function initialization($conf) {
-        // Autoload Controlers
+    /**
+     * Initialize Application
+     * @param type $conf
+     */
+    private function initialization($conf)
+    {
+        try {
+            $conf = Yaml::parse(file_get_contents(JAPLOORA_DOC_ROOT . '/init/init.yml'));
+        } catch (ParseException $e) {
+            printf("Unable to parse the YAML string: %s", $e->getMessage());
+            exit;
+        }
+        
+        // Find Init Classes
         $this->discoverClasses('Init');
         $initialisers = $this->getImplementation('Init');
 
-        foreach($initialisers as $initialiser) {
+        // Run All Initializers
+        foreach ($initialisers as $initialiser) {
             $initialiser::initialize($conf);
         }
     }
-    
+
     /**
      * Extract data from HttpFoundation Request
      * @param Request $request
@@ -94,7 +108,6 @@ class Japloora extends Base
      */
     private function findAllRoutes()
     {
-
         $defined_controlers = $this->getImplementation('Controler');
         foreach ($defined_controlers as $classname) {
             $local_routes = $classname::defineRoutes();
@@ -113,7 +126,7 @@ class Japloora extends Base
     public function run()
     {
         if ($this->debug === true) {
-            Watchdog::write(serialize($this->query_datas), 'QUERY DATAS');
+            Watchdog::write(serialize($this->queryDatas), 'QUERY DATAS');
         }
         return $this->routing();
     }
@@ -132,7 +145,7 @@ class Japloora extends Base
         $parameters = array();
 
         if ($path == null) {
-            $path = $this->query_datas['Path'];
+            $path = $this->queryDatas['Path'];
         }
 
         if ($this->debug === true) {
@@ -203,16 +216,16 @@ class Japloora extends Base
 
             // Add Original Path to parameters
             $parameters['path'] = $path;
-            
+
             // If need Authent
             if (isset($possible['route']['isAuthent']) && $possible['route']['isAuthent'] === true) {
-                $headers = $this->query_datas['Headers'];
+                $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentFactory::connexion();
                 $validation = $db->checkToken($token_value);
-                
-                
+
+
                 if ($validation['status'] === false) {
                     JSONOutput::send403($validation['message']);
                 } else {
@@ -220,11 +233,11 @@ class Japloora extends Base
                     $parameters['user_id'] = $validation['user_id'];
                 }
             }
-            
+
             // Call the Callback
-            $controler = new $possible['class']($this->query_datas);
+            $controler = new $possible['class']($this->queryDatas);
             $callback = $possible['route']['callback'];
-           
+
             $output_datas = $controler->$callback($parameters);
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
             JSONOutput::end($output_datas['datas'], $code);
@@ -265,8 +278,8 @@ class Japloora extends Base
                 } else {
                     $schemes = $route_data['scheme'];
                 }
-                if (!in_array($this->query_datas['Schema'], $schemes)) {
-                    return $this->routingError('Schema', $this->query_data['Schema']);
+                if (!in_array($this->queryDatas['Schema'], $schemes)) {
+                    return $this->routingError('Schema', $this->queryData['Schema']);
                 }
             }
 
@@ -276,8 +289,8 @@ class Japloora extends Base
                 } else {
                     $methods = $route_data['method'];
                 }
-                if (!in_array($this->query_datas['Method'], $methods)) {
-                    return $this->routingError('Method', $this->query_data['Method']);
+                if (!in_array($this->queryDatas['Method'], $methods)) {
+                    return $this->routingError('Method', $this->queryData['Method']);
                 }
             }
         }
@@ -301,12 +314,12 @@ class Japloora extends Base
                 $value = self::ROUTE_PARAMETER_REQUIRED;
             }
 
-            if ($value === self::ROUTE_PARAMETER_REQUIRED && !isset($this->query_datas['Query'][$key])) {
+            if ($value === self::ROUTE_PARAMETER_REQUIRED && !isset($this->queryDatas['Query'][$key])) {
                 throw new \Exception('The route you\'ll try accessing need "' . $key . '" parameter.');
             }
 
-            if (isset($this->query_datas['Query'][$key])) {
-                $bindedParams['Query'][$key] = $this->query_datas['Query'][$key];
+            if (isset($this->queryDatas['Query'][$key])) {
+                $bindedParams['Query'][$key] = $this->queryDatas['Query'][$key];
             } else {
                 $bindedParams['Query'][$key] = null;
             }

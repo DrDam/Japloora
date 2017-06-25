@@ -1,9 +1,6 @@
 <?php
-
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Initialisation of AuthentDB
  */
 
 namespace Japloora\Authent\Init;
@@ -12,16 +9,13 @@ use Japloora\InitBase;
 use Japloora\Authent\AuthentBase;
 use Japloora\Authent\AuthentDataBase;
 use Japloora\Authent\AuthentFactory;
-/**
- * Description of AuthentInit
- *
- * @author drdam
- */
+
 class AuthentInit extends InitBase
 {
-    public static function initialize($conf) {
-        
-        if(!is_dir(AuthentBase::getDBRoute())) {
+    public static function initialize($conf)
+    {
+        // Create all files of DB
+        if (!is_dir(AuthentBase::getDBRoute())) {
             mkdir(AuthentBase::getDBRoute());
         }
         
@@ -33,6 +27,7 @@ class AuthentInit extends InitBase
             touch(AuthentBase::getDBLog());
         }
         
+        // Create Super User
         $su = $conf['Authent'];
         
         $data = new \stdClass();

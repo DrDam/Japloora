@@ -1,28 +1,22 @@
 <?php
-
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Data Class containing DB paths
  */
 
 namespace Japloora\Authent;
 
-/**
- * Description of AuthentBase
- *
- * @author drdam
- */
 class AuthentBase
 {
-    public static function getDBRoute() {
+    public static function getDBRoute()
+    {
         return JAPLOORA_DOC_ROOT . '/AuthentDB';
     }
-    public static function getDBUser() {
+    public static function getDBUser()
+    {
         return self::getDBRoute() . '/User';
     }
-    public static function getDBlog() {
+    public static function getDBlog()
+    {
         return self::getDBRoute() . '/Log';
     }
-
 }

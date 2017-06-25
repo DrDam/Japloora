@@ -9,7 +9,10 @@ class AuthentDataBase
     private $CacheDatas = array();
     private static $instance;
 
-
+    /**
+     * Connect to Authent DB
+     * @return AuthentDataBase
+     */
     public static function connexion()
     {
         if (self::$instance == null) {
@@ -18,25 +21,41 @@ class AuthentDataBase
         return self::$instance;
     }
     
+    /**
+     * Refresh Database
+     */
     protected function __construct()
     {
-
         $this->updateDataCache();
     }
     
-    public static function hash($string) {
+    /**
+     * Database Hash method
+     * @param string $string
+     * @return string
+     */
+    public static function hash($string)
+    {
         return md5($string);
     }
 
+    /**
+     * Refresh database Cache
+     */
     private function updateDataCache()
     {
         $datas = file_get_contents(AuthentBase::getDBUser());
         $this->CacheDatas = json_decode($datas);
-        if($this->CacheDatas == null) {
+        if ($this->CacheDatas == null) {
             $this->CacheDatas = [];
         }
     }
 
+    /**
+     * Write data to Authent DB
+     * @param type $datas
+     * @return type
+     */
     public function write($datas)
     {
         if (isset($datas->Id)) {
@@ -49,6 +68,11 @@ class AuthentDataBase
         return $out;
     }
 
+    /**
+     * Update a User Data
+     * @param type $datas
+     * @return string
+     */
     private function update($datas)
     {
         $this->updateDataCache();
@@ -59,6 +83,11 @@ class AuthentDataBase
         return '';
     }
 
+    /**
+     * Create new User
+     * @param type $datas
+     * @return type
+     */
     private function insert($datas)
     {
         $datas->Id = count($this->CacheDatas);
@@ -67,6 +96,9 @@ class AuthentDataBase
         return $datas->Id;
     }
 
+    /**
+     * Phisical write method
+     */
     private function writeDatas()
     {
         file_put_contents(AuthentBase::getDBUser(), json_encode($this->CacheDatas));
@@ -88,6 +120,11 @@ class AuthentDataBase
         return false;
     }
     
+    /**
+     * Return User Data from id
+     * @param type $user_id
+     * @return type
+     */
     public function getUser($user_id)
     {
         $this->updateDataCache();

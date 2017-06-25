@@ -1,7 +1,6 @@
 # Japloora 
 ## Just Another PHP Lightweight Object Oriented RestAPI
 
-
 * [Introduction](#introduction)
 * [Purpose](#Purpose)
 * [Get started](#get-started)
@@ -22,7 +21,8 @@ The way to use are simple :
 
 ### Get started
 
-- Get package with composer ( japloora/japloora ),
-- Copy/move index.php, .htaccess and "modules" folder from "exemple" folder to the Apache DocumentRoot
+- Get package with composer(japloora/japloora ),
+- Copy "exemple" folder's files on to the Apache DocumentRoot.
+- Add Apache read/write on "AuthentDB" and "init" folder
+- In init Folder, edit init.yml change login/password of Authent Super Admin
 - Try exemple URLs
-
