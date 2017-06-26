@@ -125,13 +125,17 @@ class AuthentDataBase
      * @param type $user_id
      * @return type
      */
-    public function getUser($user_id)
+    public function getUser($user_id, $withPass = false)
     {
         $this->updateDataCache();
         if (isset($this->CacheDatas[$user_id])) {
             $user = $this->CacheDatas[$user_id];
-            unset($user->token);
-            return $this->CacheDatas[$user_id];
+            unset($user->Token);
+            if($withPass === false) {
+                unset($user->Pass);
+            }
+            $user->Id = $user_id;
+            return $user;
         }
         return null;
     }
@@ -144,7 +148,7 @@ class AuthentDataBase
      */
     public function generateToken($userId, $saveToken = true)
     {
-        $user = $this->getUser($userId);
+        $user = $this->getUser($userId, TRUE);
 
         $hash = self::hash($user->Pass);
         $salt = floor(time() / 1000);
@@ -193,10 +197,35 @@ class AuthentDataBase
     private function getUserByToken($token)
     {
         foreach ($this->CacheDatas as $key => $user) {
-            if ($user->token === $token) {
+            if ($user->Token === $token) {
                 return $key;
             }
         }
         return null;
+    }
+    
+    /**
+     * Check if userId has Permission
+     * @param type $user_id
+     * @param type $permission
+     * @return Boolean
+     */
+    public function userAccess($user_id, $permission) {
+        $user = $this->getUser($user_id);
+        return (in_array($permission, $user->Permissions));
+    }
+    
+    /**
+     * Get All Users
+     * @return array
+     */
+    public function getAllUsers() {
+        $this->updateDataCache();
+        $collection = array();
+        foreach(array_keys($this->CacheDatas) as $key) {
+           $collection[$key] = ['Id' => $key];
+        }
+        
+        return $collection;
     }
 }

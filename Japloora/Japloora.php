@@ -50,7 +50,7 @@ class Japloora extends Base
     public function __construct(Request $request, $debug = false)
     {
         if (file_exists(JAPLOORA_DOC_ROOT . '/init/init.yml')) {
-            $this->initialization($conf);
+            $this->initialization();
             // Delete intialization file after first runing
             unlink(JAPLOORA_DOC_ROOT . '/init/init.yml');
         }
@@ -68,7 +68,7 @@ class Japloora extends Base
      * Initialize Application
      * @param type $conf
      */
-    private function initialization($conf)
+    private function initialization()
     {
         try {
             $conf = Yaml::parse(file_get_contents(JAPLOORA_DOC_ROOT . '/init/init.yml'));
@@ -202,7 +202,7 @@ class Japloora extends Base
 
             // If the best correspondance contain validation Error
             if ($validated === false) {
-                $this->output($this->validateRouting($possible['route']), 'JSON');
+                JSONOutput::end($this->validateRouting($possible['route']));
             }
 
             // If route define parameters, they are bind
@@ -213,19 +213,39 @@ class Japloora extends Base
                     return $e->getMessage();
                 }
             }
+            
+            if($end != -1) {
+                $queryFragments = [];
+                $target_path = explode('/', $possible['route']['path']);
+                $url_elems = explode('/', $path);
+                // output first '/' on $path
+                array_shift($url_elems);
+                foreach($target_path as $key => $fragment) {
+                    if($fragment == '*' && $url_elems[$key] != '') {
+                        $queryFragments[] = $url_elems[$key];
+                    }
+                }
+                $parameters['queryFragments'] = $queryFragments;
+            }
 
             // Add Original Path to parameters
             $parameters['path'] = $path;
 
             // If need Authent
-            if (isset($possible['route']['isAuthent']) && $possible['route']['isAuthent'] === true) {
+            if (isset($possible['route']['Authent']) && isset($possible['route']['Authent']['permission']) && $possible['route']['Authent']['permission'] != '') {
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentFactory::connexion();
                 $validation = $db->checkToken($token_value);
 
-
+                if(isset($possible['route']['Authent']['permission'])) {
+                    $bool = $db->userAccess($validation['user_id'], $possible['route']['Authent']['permission']);
+                    if($bool === false ) {
+                        JSONOutput::send403();
+                    }
+                }
+                
                 if ($validation['status'] === false) {
                     JSONOutput::send403($validation['message']);
                 } else {
