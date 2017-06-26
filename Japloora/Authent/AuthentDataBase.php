@@ -58,13 +58,14 @@ class AuthentDataBase
      */
     public function write($datas)
     {
+        $this->updateDataCache();
         if (isset($datas->Id)) {
             $out = $this->update($datas);
         } else {
             $out = $this->insert($datas);
         }
 
-        $this->updateDataCache();
+        
         return $out;
     }
 

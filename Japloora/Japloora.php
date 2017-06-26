@@ -8,7 +8,13 @@ namespace Japloora;
 
 // Application need root folder
 define('JAPLOORA_DOC_ROOT', $_SERVER['DOCUMENT_ROOT']);
-
+define('ROUTE_PARAMETER_REQUIRED', 1);
+define('ROUTE_PARAMETER_OPTIONAL', 0);
+define('ROUTE_PARAMETER_TYPE_STRING', 'string');
+define('ROUTE_PARAMETER_TYPE_INT', 'int');
+define('ROUTE_PARAMETER_TYPE_BOOL', 'bool');
+define('ROUTE_PARAMETER_TYPE_ARRAY', 'array');
+    
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Yaml\Yaml;
 use Japloora\Authent\AuthentFactory;
@@ -22,8 +28,7 @@ use Japloora\Base;
 class Japloora extends Base
 {
 
-    const ROUTE_PARAMETER_REQUIRED = 1;
-    const ROUTE_PARAMETER_OPTIONA = 0;
+
 
     /**
      * Datas extract from HttpFoundation Request
@@ -213,7 +218,7 @@ class Japloora extends Base
                     return $e->getMessage();
                 }
             }
-            
+ 
             if($end != -1) {
                 $queryFragments = [];
                 $target_path = explode('/', $possible['route']['path']);
@@ -227,7 +232,6 @@ class Japloora extends Base
                 }
                 $parameters['queryFragments'] = $queryFragments;
             }
-
             // Add Original Path to parameters
             $parameters['path'] = $path;
 
@@ -262,7 +266,7 @@ class Japloora extends Base
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
             JSONOutput::end($output_datas['datas'], $code);
         }
-
+        
         // There is no rout, return 404
         JSONOutput::send404();
     }
@@ -281,7 +285,7 @@ class Japloora extends Base
                 'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'
             ],
         );
-        JSONOutput::end($data, 422);
+        //JSONOutput::end($data, 422);
     }
 
     /**
@@ -302,7 +306,6 @@ class Japloora extends Base
                     return $this->routingError('Schema', $this->queryData['Schema']);
                 }
             }
-
             if (isset($route_data['method'])) {
                 if (!is_array($route_data['method'])) {
                     $methods = array($route_data['method']);
@@ -325,20 +328,29 @@ class Japloora extends Base
      */
     private function bindParameters($parameters = array())
     {
+        //print_r($parameters);
         $bindedParams = array();
 
-        foreach ($parameters as $key => $value) {
-            // Manage default_value
-            if (is_numeric($key)) {
-                $key = $value;
-                $value = self::ROUTE_PARAMETER_REQUIRED;
-            }
+        foreach ($parameters as $key => $parameter_confs) {
+                        
+            $mandatory = (isset($parameter_confs['mandatory'])) ? $parameter_confs['mandatory'] : ROUTE_PARAMETER_REQUIRED;
+            $type = (isset($parameter_confs['type'])) ? $parameter_confs['type'] : ROUTE_PARAMETER_TYPE_STRING;
 
-            if ($value === self::ROUTE_PARAMETER_REQUIRED && !isset($this->queryDatas['Query'][$key])) {
+            if ($mandatory === ROUTE_PARAMETER_REQUIRED && !isset($this->queryDatas['Query'][$key])) {
                 throw new \Exception('The route you\'ll try accessing need "' . $key . '" parameter.');
             }
 
             if (isset($this->queryDatas['Query'][$key])) {
+                $parameter = $this->queryDatas['Query'][$key];
+                if($type == ROUTE_PARAMETER_TYPE_ARRAY && !is_array($parameter)) {
+                    throw new \Exception('The paramater ' . $key . ' need array data.');
+                }
+                if($type == ROUTE_PARAMETER_TYPE_INT && !is_numeric($parameter)) {
+                    throw new \Exception('The paramater ' . $key . ' need numeric data.');
+                }
+                if($type == ROUTE_PARAMETER_TYPE_BOOL && !is_bool($parameter)) {
+                    throw new \Exception('The paramater ' . $key . ' need boolean data.');
+                }
                 $bindedParams['Query'][$key] = $this->queryDatas['Query'][$key];
             } else {
                 $bindedParams['Query'][$key] = null;
