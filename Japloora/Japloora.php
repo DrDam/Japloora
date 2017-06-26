@@ -219,14 +219,14 @@ class Japloora extends Base
                 }
             }
  
-            if($end != -1) {
+            if ($end != -1) {
                 $queryFragments = [];
                 $target_path = explode('/', $possible['route']['path']);
                 $url_elems = explode('/', $path);
                 // output first '/' on $path
                 array_shift($url_elems);
-                foreach($target_path as $key => $fragment) {
-                    if($fragment == '*' && $url_elems[$key] != '') {
+                foreach ($target_path as $key => $fragment) {
+                    if ($fragment == '*' && $url_elems[$key] != '') {
                         $queryFragments[] = $url_elems[$key];
                     }
                 }
@@ -236,16 +236,19 @@ class Japloora extends Base
             $parameters['path'] = $path;
 
             // If need Authent
-            if (isset($possible['route']['Authent']) && isset($possible['route']['Authent']['permission']) && $possible['route']['Authent']['permission'] != '') {
+            if (isset($possible['route']['Authent'])
+                    && isset($possible['route']['Authent']['permission'])
+                    && $possible['route']['Authent']['permission'] != ''
+                    ) {
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentFactory::connexion();
                 $validation = $db->checkToken($token_value);
 
-                if(isset($possible['route']['Authent']['permission'])) {
+                if (isset($possible['route']['Authent']['permission'])) {
                     $bool = $db->userAccess($validation['user_id'], $possible['route']['Authent']['permission']);
-                    if($bool === false ) {
+                    if ($bool === false) {
                         JSONOutput::send403();
                     }
                 }
@@ -332,9 +335,12 @@ class Japloora extends Base
         $bindedParams = array();
 
         foreach ($parameters as $key => $parameter_confs) {
-                        
-            $mandatory = (isset($parameter_confs['mandatory'])) ? $parameter_confs['mandatory'] : ROUTE_PARAMETER_REQUIRED;
-            $type = (isset($parameter_confs['type'])) ? $parameter_confs['type'] : ROUTE_PARAMETER_TYPE_STRING;
+            $mandatory = (isset($parameter_confs['mandatory']))
+                    ? $parameter_confs['mandatory']
+                    : ROUTE_PARAMETER_REQUIRED;
+            $type = (isset($parameter_confs['type']))
+                    ? $parameter_confs['type']
+                    : ROUTE_PARAMETER_TYPE_STRING;
 
             if ($mandatory === ROUTE_PARAMETER_REQUIRED && !isset($this->queryDatas['Query'][$key])) {
                 throw new \Exception('The route you\'ll try accessing need "' . $key . '" parameter.');
@@ -342,13 +348,13 @@ class Japloora extends Base
 
             if (isset($this->queryDatas['Query'][$key])) {
                 $parameter = $this->queryDatas['Query'][$key];
-                if($type == ROUTE_PARAMETER_TYPE_ARRAY && !is_array($parameter)) {
+                if ($type == ROUTE_PARAMETER_TYPE_ARRAY && !is_array($parameter)) {
                     throw new \Exception('The paramater ' . $key . ' need array data.');
                 }
-                if($type == ROUTE_PARAMETER_TYPE_INT && !is_numeric($parameter)) {
+                if ($type == ROUTE_PARAMETER_TYPE_INT && !is_numeric($parameter)) {
                     throw new \Exception('The paramater ' . $key . ' need numeric data.');
                 }
-                if($type == ROUTE_PARAMETER_TYPE_BOOL && !is_bool($parameter)) {
+                if ($type == ROUTE_PARAMETER_TYPE_BOOL && !is_bool($parameter)) {
                     throw new \Exception('The paramater ' . $key . ' need boolean data.');
                 }
                 $bindedParams['Query'][$key] = $this->queryDatas['Query'][$key];

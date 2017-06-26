@@ -14,7 +14,8 @@ namespace Japloora;
  * @author drdam
  */
 class Base
-{    
+{
+
     //put your code here
     
     /**

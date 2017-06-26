@@ -104,7 +104,9 @@ class AuthentControler extends ControlerBase
     {
         $db = AuthentFactory::connexion();
         
-        $permissions = (isset($params['Query']['Permissions']) && is_array($params['Query']['Permissions'])) ? $params['Query']['Permissions'] : ['read'];
+        $permissions = (isset($params['Query']['Permissions']) && is_array($params['Query']['Permissions']))
+                ? $params['Query']['Permissions']
+                : ['read'];
         $new_user = new \stdClass();
         $new_user->Login = $params['Query']['Login'];
         $new_user->Permissions = $permissions;
@@ -117,5 +119,4 @@ class AuthentControler extends ControlerBase
             'code' => 201,
         ];
     }
-
 }

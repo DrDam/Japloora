@@ -132,7 +132,7 @@ class AuthentDataBase
         if (isset($this->CacheDatas[$user_id])) {
             $user = $this->CacheDatas[$user_id];
             unset($user->Token);
-            if($withPass === false) {
+            if ($withPass === false) {
                 unset($user->Pass);
             }
             $user->Id = $user_id;
@@ -149,7 +149,7 @@ class AuthentDataBase
      */
     public function generateToken($userId, $saveToken = true)
     {
-        $user = $this->getUser($userId, TRUE);
+        $user = $this->getUser($userId, true);
 
         $hash = self::hash($user->Pass);
         $salt = floor(time() / 1000);
@@ -211,7 +211,8 @@ class AuthentDataBase
      * @param type $permission
      * @return Boolean
      */
-    public function userAccess($user_id, $permission) {
+    public function userAccess($user_id, $permission)
+    {
         $user = $this->getUser($user_id);
         return (in_array($permission, $user->Permissions));
     }
@@ -220,11 +221,12 @@ class AuthentDataBase
      * Get All Users
      * @return array
      */
-    public function getAllUsers() {
+    public function getAllUsers()
+    {
         $this->updateDataCache();
         $collection = array();
-        foreach(array_keys($this->CacheDatas) as $key) {
-           $collection[$key] = ['Id' => $key];
+        foreach (array_keys($this->CacheDatas) as $key) {
+            $collection[$key] = ['Id' => $key];
         }
         
         return $collection;
