@@ -25,27 +25,27 @@ class AuthentControler extends ControlerBase
             array(
                 'path' => 'users',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
-                'Authent' => ['permission' => 'su'],
+                'authent' => ['permission' => 'su'],
                 'callback' => 'getUsers',
             ),
             array(
                 'path' => 'user/*',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
-                'Authent' => ['permission' => 'su'],
+                'authent' => ['permission' => 'su'],
                 'callback' => 'getUser',
             ),
             array(
                 'path' => 'user/*',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'method' => [ROUTE_PARAMETER_METHOD_DELETE],
-                'Authent' => ['permission' => 'su'],
+                'authent' => ['permission' => 'su'],
                 'callback' => 'deleteUser',
             ),
             array(
                 'path' => 'user/*',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'method' => [ROUTE_PARAMETER_METHOD_PATCH],
-                'Authent' => ['permission' => 'su'],
+                'authent' => ['permission' => 'su'],
                 'callback' => 'updateUser',
                 'parameters' => [
                     'Login' => [],
@@ -60,7 +60,7 @@ class AuthentControler extends ControlerBase
                 'path' => 'user/add',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'method' => [ROUTE_PARAMETER_METHOD_POST],
-                'Authent' => ['permission' => 'su'],
+                'authent' => ['permission' => 'su'],
                 'callback' => 'addUser',
                 'parameters' => [
                     'Login' => [],

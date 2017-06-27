@@ -12,6 +12,7 @@ define('ROUTE_PARAMETER_REQUIRED', 1);
 define('ROUTE_PARAMETER_OPTIONAL', 0);
 define('ROUTE_PARAMETER_TYPE_STRING', 'string');
 define('ROUTE_PARAMETER_TYPE_INT', 'int');
+define('ROUTE_PARAMETER_TYPE_NUM', 'numeric');
 define('ROUTE_PARAMETER_TYPE_BOOL', 'bool');
 define('ROUTE_PARAMETER_TYPE_ARRAY', 'array');
 define('ROUTE_PARAMETER_SCHEME_HTTP', 'http');
@@ -248,9 +249,9 @@ class Japloora extends Base
             $parameters['path'] = $path;
             $is_authent = false;
             // If need Authent
-            if (isset($possible['route']['Authent'])
-                    && isset($possible['route']['Authent']['permission'])
-                    && $possible['route']['Authent']['permission'] != ''
+            if (isset($possible['route']['authent'])
+                    && isset($possible['route']['authent']['permission'])
+                    && $possible['route']['authent']['permission'] != ''
             ) {
                 $is_authent = true;
                 $headers = $this->queryDatas['Headers'];
@@ -258,10 +259,10 @@ class Japloora extends Base
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentFactory::connexion();
                 $validation = $db->checkToken($token_value);
-                if (isset($possible['route']['Authent']['permission'])) {
+                if (isset($possible['route']['authent']['permission'])) {
                     if ($db->userAccess(
                         $validation['user_id'],
-                        $possible['route']['Authent']['permission']
+                        $possible['route']['authent']['permission']
                     )
                                 === false) {
                         AuthentAccessLog::write($validation['user_id'], $this->queryDatas['Method'], $path, 403);
@@ -386,11 +387,14 @@ class Japloora extends Base
                 if ($type == ROUTE_PARAMETER_TYPE_ARRAY && !is_array($parameter)) {
                     throw new \Exception('The paramater ' . $key . ' need array data.');
                 }
-                if ($type == ROUTE_PARAMETER_TYPE_INT && !is_numeric($parameter)) {
-                    throw new \Exception('The paramater ' . $key . ' need numeric data.');
+                if ($type == ROUTE_PARAMETER_TYPE_INT && !is_int($parameter)) {
+                    throw new \Exception('The paramater ' . $key . ' need integer data.');
                 }
                 if ($type == ROUTE_PARAMETER_TYPE_BOOL && !is_bool($parameter)) {
                     throw new \Exception('The paramater ' . $key . ' need boolean data.');
+                }
+                if ($type == ROUTE_PARAMETER_TYPE_NUM & !is_numeric($parameter)) {
+                     throw new \Exception('The paramater ' . $key . ' need numeric data.');
                 }
                 $bindedParams['Query'][$key] = $this->queryDatas['Query'][$key];
             } else {

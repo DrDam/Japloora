@@ -17,6 +17,7 @@ The way to use are simple :
 - A controler can defined multiple route
 - Route can be "wildcarded" ( "get/type/*" )
 - A controler can precise a "wildcarded" route of another controler
+- Using a basic and "light" Authent mecanisme
 
 
 ### Get started
