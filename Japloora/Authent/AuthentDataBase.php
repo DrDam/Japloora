@@ -246,6 +246,5 @@ class AuthentDataBase
             $collection[$key] = ['Id' => $key];
         }
         return $collection;
-
     }
 }

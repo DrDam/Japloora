@@ -238,13 +238,13 @@ class Japloora extends Base
             }
             // Add Original Path to parameters
             $parameters['path'] = $path;
-            $is_authent = FALSE;
+            $is_authent = false;
             // If need Authent
             if (isset($possible['route']['Authent'])
                     && isset($possible['route']['Authent']['permission'])
                     && $possible['route']['Authent']['permission'] != ''
                     ) {
-                $is_authent = TRUE;
+                $is_authent = true;
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
@@ -305,29 +305,39 @@ class Japloora extends Base
      * @param array $route_data
      * @return array
      */
-    private function validateRouting($route_data) {  
+    private function validateRouting($route_data)
+    {
         
-        if(!$this->routingItemValidator($route_data['scheme'], $this->queryDatas['Schema'], ROUTE_PARAMETER_SCHEME_HTTP)) {
+        if (!$this->routingItemValidator(
+            $route_data['scheme'],
+            $this->queryDatas['Schema'],
+            ROUTE_PARAMETER_SCHEME_HTTP
+        )) {
              return $this->routingError('Schema', $this->queryData['Schema']);
         }
         
-        if(!$this->routingItemValidator($route_data['method'], $this->queryDatas['Method'], ROUTE_PARAMETER_METHOD_GET)) {
+        if (!$this->routingItemValidator(
+            $route_data['method'],
+            $this->queryDatas['Method'],
+            ROUTE_PARAMETER_METHOD_GET
+        )) {
              return $this->routingError('Method', $this->queryData['Method']);
         }
 
         return [];
     }
     
-    private function routingItemValidator($value, $target, $default) {
+    private function routingItemValidator($value, $target, $default)
+    {
 
         $item = (!isset($route_data[$value])) ? isset($route_data[$value]) : [$default];
         if (!is_array($item)) {
             $item = [$item];
         }
         if (!in_array($target, $item)) {
-            return FALSE;
+            return false;
         }
-        return TRUE;
+        return true;
     }
 
     /**
