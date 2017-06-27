@@ -35,6 +35,13 @@ class AuthentControler extends ControlerBase
                 'callback' => 'getUser',
             ),
             array(
+                'path' => 'user/*',
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
+                'method' => [ROUTE_PARAMETER_METHOD_DELETE],
+                'Authent' => ['permission' => 'su'],
+                'callback' => 'deleteUser',
+            ),
+            array(
                 'path' => 'user/add',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'method' => [ROUTE_PARAMETER_METHOD_POST],
@@ -83,6 +90,28 @@ class AuthentControler extends ControlerBase
         return array('datas' => $users);
     }
 
+    public function deleteUser($params)
+    {
+
+        $query = $params['queryFragments'];
+
+        $authentDB = AuthentFactory::connexion();
+        $user = $authentDB->getUser($query[0]);
+
+        if ($user != null && $query[0] != 0) {
+            $authentDB->delete($query[0]);
+            return [
+                'datas' => '',
+                'code' => 204,
+            ];
+        } else {
+            return [
+                'datas' => '',
+                'code' => 403,
+            ];
+        }
+    }
+
     public function getUser($params)
     {
 
@@ -97,15 +126,15 @@ class AuthentControler extends ControlerBase
     public function addUser($params)
     {
         $db = AuthentFactory::connexion();
-        
-        $permissions = (isset($params['Query']['Permissions']) && is_array($params['Query']['Permissions']))
-                ? $params['Query']['Permissions']
-                : ['read'];
+
+        $permissions = (isset($params['Query']['Permissions'])
+                && is_array($params['Query']['Permissions']))
+                ? $params['Query']['Permissions'] : ['read'];
         $new_user = new \stdClass();
         $new_user->Login = $params['Query']['Login'];
         $new_user->Permissions = $permissions;
         $new_user->Pass = $db::hash($params['Query']['Pass']);
-   
+
         $user_id = $db->write($new_user);
 
         return [

@@ -20,7 +20,7 @@ define('ROUTE_PARAMETER_METHOD_GET', 'GET');
 define('ROUTE_PARAMETER_METHOD_POST', 'POST');
 define('ROUTE_PARAMETER_METHOD_PUSH', 'PUSH');
 define('ROUTE_PARAMETER_METHOD_DELETE', 'DELETE');
-    
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Yaml\Yaml;
 use Japloora\Authent\AuthentFactory;
@@ -34,6 +34,7 @@ use Japloora\Base;
  */
 class Japloora extends Base
 {
+
     /**
      * Datas extract from HttpFoundation Request
      * @var array
@@ -85,7 +86,7 @@ class Japloora extends Base
             printf("Unable to parse the YAML string: %s", $e->getMessage());
             exit;
         }
-        
+
         // Find Init Classes
         $this->discoverClasses('Init');
         $initialisers = $this->getImplementation('Init');
@@ -164,6 +165,7 @@ class Japloora extends Base
         foreach ($this->routes as $classname => $routes) {
             foreach ($routes as $route_data) {
                 $route_name = $route_data['path'];
+
                 if (substr($route_name, 0, 1) != '/') {
                     $route_name = '/' . $route_name;
                 }
@@ -176,6 +178,9 @@ class Japloora extends Base
                         // Find more exactly path
                         if ($new_end < $end) {
                             $validated = ($this->validateRouting($route_data) == []);
+                            if ($validated === false) {
+                                continue;
+                            }
                             $possible['route'] = $route_data;
                             $possible['class'] = $classname;
                             $end = $new_end;
@@ -186,6 +191,9 @@ class Japloora extends Base
                     if ($route_name == $path) {
                         $new_validated = ($this->validateRouting($route_data) == []);
 
+                        if ($new_validated === false) {
+                            continue;
+                        }
                         // If They'r the firste correspondance or a more accurate
                         if ($validated == true || ($validated == false && $new_validated === true)) {
                             $possible['route'] = $route_data;
@@ -222,7 +230,7 @@ class Japloora extends Base
                     return $e->getMessage();
                 }
             }
- 
+
             if ($end != -1) {
                 $queryFragments = [];
                 $target_path = explode('/', $possible['route']['path']);
@@ -243,7 +251,7 @@ class Japloora extends Base
             if (isset($possible['route']['Authent'])
                     && isset($possible['route']['Authent']['permission'])
                     && $possible['route']['Authent']['permission'] != ''
-                    ) {
+            ) {
                 $is_authent = true;
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
@@ -252,12 +260,15 @@ class Japloora extends Base
                 $validation = $db->checkToken($token_value);
 
                 if (isset($possible['route']['Authent']['permission'])) {
-                    $bool = $db->userAccess($validation['user_id'], $possible['route']['Authent']['permission']);
-                    if ($bool === false) {
+                    if ($db->userAccess(
+                        $validation['user_id'],
+                        $possible['route']['Authent']['permission']
+                    )
+                                === false) {
                         JSONOutput::send403();
                     }
                 }
-                
+
                 if ($validation['status'] === false) {
                     JSONOutput::send403($validation['message']);
                 } else {
@@ -272,14 +283,14 @@ class Japloora extends Base
 
             $output_datas = $controler->$callback($parameters);
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
-            
+
             // log Datas
             $user_id = (isset($parameters['user_id'])) ? $parameters['user_id'] : '';
             AuthentAccessLog::write($user_id, $path, $code);
-            
+
             JSONOutput::end($output_datas['datas'], $code);
         }
-        
+
         // There is no rout, return 404
         JSONOutput::send404();
     }
@@ -295,9 +306,11 @@ class Japloora extends Base
         $data = array(
             'datas' =>
             [
-                'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'
+                'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.',
+                'Code' => 405,
             ],
         );
+        return $data;
     }
 
     /**
@@ -307,30 +320,30 @@ class Japloora extends Base
      */
     private function validateRouting($route_data)
     {
-        
+
         if (!$this->routingItemValidator(
-            $route_data['scheme'],
+            'scheme',
             $this->queryDatas['Schema'],
-            ROUTE_PARAMETER_SCHEME_HTTP
+            ROUTE_PARAMETER_SCHEME_HTTP,
+            $route_data
         )) {
-             return $this->routingError('Schema', $this->queryData['Schema']);
-        }
-        
-        if (!$this->routingItemValidator(
-            $route_data['method'],
-            $this->queryDatas['Method'],
-            ROUTE_PARAMETER_METHOD_GET
-        )) {
-             return $this->routingError('Method', $this->queryData['Method']);
+            return $this->routingError('Schema', $this->queryData['Schema']);
         }
 
+        if (!$this->routingItemValidator(
+            'method',
+            $this->queryDatas['Method'],
+            ROUTE_PARAMETER_METHOD_GET,
+            $route_data
+        )) {
+            return $this->routingError('Method', $this->queryData['Method']);
+        }
         return [];
     }
-    
-    private function routingItemValidator($value, $target, $default)
-    {
 
-        $item = (!isset($route_data[$value])) ? isset($route_data[$value]) : [$default];
+    private function routingItemValidator($value, $target, $default, $route_data)
+    {
+        $item = (isset($route_data[$value])) ? $route_data[$value] : [$default];
         if (!is_array($item)) {
             $item = [$item];
         }
@@ -355,9 +368,7 @@ class Japloora extends Base
             $mandatory = (isset($parameter_confs['mandatory']))
                     ? $parameter_confs['mandatory']
                     : ROUTE_PARAMETER_REQUIRED;
-            $type = (isset($parameter_confs['type']))
-                    ? $parameter_confs['type']
-                    : ROUTE_PARAMETER_TYPE_STRING;
+            $type = (isset($parameter_confs['type'])) ? $parameter_confs['type'] : ROUTE_PARAMETER_TYPE_STRING;
 
             if ($mandatory === ROUTE_PARAMETER_REQUIRED && !isset($this->queryDatas['Query'][$key])) {
                 throw new \Exception('The route you\'ll try accessing need "' . $key . '" parameter.');

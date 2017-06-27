@@ -6,6 +6,7 @@ use Japloora\Authent\AuthentBase;
 
 class AuthentDataBase
 {
+
     private $CacheDatas = array();
     private static $instance;
 
@@ -20,7 +21,7 @@ class AuthentDataBase
         }
         return self::$instance;
     }
-    
+
     /**
      * Refresh Database
      */
@@ -28,7 +29,7 @@ class AuthentDataBase
     {
         $this->updateDataCache();
     }
-    
+
     /**
      * Database Hash method
      * @param string $string
@@ -65,7 +66,7 @@ class AuthentDataBase
             $out = $this->insert($datas);
         }
 
-        
+
         return $out;
     }
 
@@ -137,7 +138,7 @@ class AuthentDataBase
         }
         return false;
     }
-    
+
     /**
      * Return User Data from id
      * @param type $user_id
@@ -221,7 +222,7 @@ class AuthentDataBase
         }
         return null;
     }
-    
+
     /**
      * Check if userId has Permission
      * @param type $user_id
@@ -233,7 +234,7 @@ class AuthentDataBase
         $user = $this->getUser($user_id);
         return (in_array($permission, $user->Permissions));
     }
-    
+
     /**
      * Get All Users
      * @return array
@@ -246,5 +247,12 @@ class AuthentDataBase
             $collection[$key] = ['Id' => $key];
         }
         return $collection;
+    }
+
+    public function delete($user_id)
+    {
+        $this->updateDataCache();
+        unset($this->CacheDatas[$user_id]);
+        $this->writeDatas();
     }
 }
