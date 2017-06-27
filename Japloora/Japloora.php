@@ -18,7 +18,7 @@ define('ROUTE_PARAMETER_SCHEME_HTTP', 'http');
 define('ROUTE_PARAMETER_SCHEME_HTTPS', 'https');
 define('ROUTE_PARAMETER_METHOD_GET', 'GET');
 define('ROUTE_PARAMETER_METHOD_POST', 'POST');
-define('ROUTE_PARAMETER_METHOD_PUSH', 'PUSH');
+define('ROUTE_PARAMETER_METHOD_PATCH', 'PATCH');
 define('ROUTE_PARAMETER_METHOD_DELETE', 'DELETE');
 
 use Symfony\Component\HttpFoundation\Request;
@@ -258,13 +258,13 @@ class Japloora extends Base
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentFactory::connexion();
                 $validation = $db->checkToken($token_value);
-
                 if (isset($possible['route']['Authent']['permission'])) {
                     if ($db->userAccess(
                         $validation['user_id'],
                         $possible['route']['Authent']['permission']
                     )
                                 === false) {
+                        AuthentAccessLog::write($validation['user_id'], $this->queryDatas['Method'], $path, 403);
                         JSONOutput::send403();
                     }
                 }
@@ -285,13 +285,20 @@ class Japloora extends Base
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
 
             // log Datas
-            $user_id = (isset($parameters['user_id'])) ? $parameters['user_id'] : '';
-            AuthentAccessLog::write($user_id, $path, $code);
+            $user_id = (isset($parameters['user_id'])) ? $parameters['user_id'] : null;
+
+            if ($user_id === null) {
+                if (isset($this->queryDatas['Query']['Login'])) {
+                    $user_id = $this->queryDatas['Query']['Login'];
+                }
+            }
+            AuthentAccessLog::write($user_id, $this->queryDatas['Method'], $path, $code);
 
             JSONOutput::end($output_datas['datas'], $code);
         }
 
         // There is no rout, return 404
+        AuthentAccessLog::write('', $this->queryDatas['Method'], $path, 404);
         JSONOutput::send404();
     }
 

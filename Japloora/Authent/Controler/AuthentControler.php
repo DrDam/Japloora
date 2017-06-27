@@ -42,6 +42,21 @@ class AuthentControler extends ControlerBase
                 'callback' => 'deleteUser',
             ),
             array(
+                'path' => 'user/*',
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
+                'method' => [ROUTE_PARAMETER_METHOD_PATCH],
+                'Authent' => ['permission' => 'su'],
+                'callback' => 'updateUser',
+                'parameters' => [
+                    'Login' => [],
+                    'Pass' => [],
+                    'Permissions' => [
+                        'mandatory' => ROUTE_PARAMETER_OPTIONAL,
+                        'type' => ROUTE_PARAMETER_TYPE_ARRAY
+                    ],
+                ],
+            ),
+            array(
                 'path' => 'user/add',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'method' => [ROUTE_PARAMETER_METHOD_POST],
@@ -49,7 +64,7 @@ class AuthentControler extends ControlerBase
                 'callback' => 'addUser',
                 'parameters' => [
                     'Login' => [],
-                    'Pass' => [],
+                    'Pass' => ['mandatory' => ROUTE_PARAMETER_OPTIONAL,],
                     'Permissions' => [
                         'mandatory' => ROUTE_PARAMETER_OPTIONAL,
                         'type' => ROUTE_PARAMETER_TYPE_ARRAY
@@ -126,14 +141,8 @@ class AuthentControler extends ControlerBase
     public function addUser($params)
     {
         $db = AuthentFactory::connexion();
+        $new_user = $this->makeUser($params, $db);
 
-        $permissions = (isset($params['Query']['Permissions'])
-                && is_array($params['Query']['Permissions']))
-                ? $params['Query']['Permissions'] : ['read'];
-        $new_user = new \stdClass();
-        $new_user->Login = $params['Query']['Login'];
-        $new_user->Permissions = $permissions;
-        $new_user->Pass = $db::hash($params['Query']['Pass']);
 
         $user_id = $db->write($new_user);
 
@@ -141,5 +150,36 @@ class AuthentControler extends ControlerBase
             'datas' => array("query" => $params['Query'], 'user_id' => $user_id),
             'code' => 201,
         ];
+    }
+
+    public function updateUser($params)
+    {
+        $query = $params['queryFragments'];
+
+        $db = AuthentFactory::connexion();
+        $user = $db->getUser($query[0]);
+
+        if ($user != null) {
+            $new_user = $this->makeUser($params, $db);
+            $new_user->Id = $query[0];
+            $user_id = $db->write($new_user);
+            return [
+                'datas' => array("query" => $params['Query'], 'user_id' => $user_id),
+                'code' => 201,
+            ];
+        }
+    }
+
+    private function makeUser($params, $db)
+    {
+        $permissions = (isset($params['Query']['Permissions'])
+                && is_array($params['Query']['Permissions']))
+                    ? $params['Query']['Permissions']
+                    : ['read'];
+        $new_user = new \stdClass();
+        $new_user->Login = $params['Query']['Login'];
+        $new_user->Permissions = $permissions;
+        $new_user->Pass = $db::hash($params['Query']['Pass']);
+        return $new_user;
     }
 }

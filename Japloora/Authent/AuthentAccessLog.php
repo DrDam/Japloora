@@ -7,12 +7,13 @@ use Japloora\Authent\AuthentBase;
 
 class AuthentAccessLog
 {
-    public static function write($user_id, $url, $code)
+    public static function write($user_id, $method, $url, $code)
     {
         
         $datas = [
             time(),
             $user_id,
+            $method,
             $url,
             $code
         ];
