@@ -14,38 +14,32 @@ class AuthentControler extends ControlerBase
         return array(
             array(
                 'path' => 'authent',
-                'scheme' => ['http', 'https'],
-                'method' => 'POST',
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
+                'method' => [ROUTE_PARAMETER_METHOD_POST],
                 'parameters' => [
                     'Login' => [],
                     'Pass' => [],
                 ],
                 'callback' => 'generateToken',
-                'format' => 'JSON'
             ),
             array(
                 'path' => 'users',
-                'scheme' => ['http', 'https'],
-                'method' => 'GET',
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'Authent' => ['permission' => 'su'],
                 'callback' => 'getUsers',
-                'format' => 'JSON'
             ),
             array(
                 'path' => 'user/*',
-                'scheme' => ['http', 'https'],
-                'method' => 'GET',
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'Authent' => ['permission' => 'su'],
                 'callback' => 'getUser',
-                'format' => 'JSON'
             ),
             array(
                 'path' => 'user/add',
-                'scheme' => ['http', 'https'],
-                'method' => ['GET', 'POST'],
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
+                'method' => [ROUTE_PARAMETER_METHOD_POST],
                 'Authent' => ['permission' => 'su'],
                 'callback' => 'addUser',
-                'format' => 'JSON',
                 'parameters' => [
                     'Login' => [],
                     'Pass' => [],

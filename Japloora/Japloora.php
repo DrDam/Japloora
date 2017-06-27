@@ -14,10 +14,17 @@ define('ROUTE_PARAMETER_TYPE_STRING', 'string');
 define('ROUTE_PARAMETER_TYPE_INT', 'int');
 define('ROUTE_PARAMETER_TYPE_BOOL', 'bool');
 define('ROUTE_PARAMETER_TYPE_ARRAY', 'array');
+define('ROUTE_PARAMETER_SCHEME_HTTP', 'http');
+define('ROUTE_PARAMETER_SCHEME_HTTPS', 'https');
+define('ROUTE_PARAMETER_METHOD_GET', 'GET');
+define('ROUTE_PARAMETER_METHOD_POST', 'POST');
+define('ROUTE_PARAMETER_METHOD_PUSH', 'PUSH');
+define('ROUTE_PARAMETER_METHOD_DELETE', 'DELETE');
     
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Yaml\Yaml;
 use Japloora\Authent\AuthentFactory;
+use Japloora\Authent\AuthentAccessLog;
 use Japloora\Watchdog;
 use Japloora\JSONOutput;
 use Japloora\Base;
@@ -27,9 +34,6 @@ use Japloora\Base;
  */
 class Japloora extends Base
 {
-
-
-
     /**
      * Datas extract from HttpFoundation Request
      * @var array
@@ -234,12 +238,13 @@ class Japloora extends Base
             }
             // Add Original Path to parameters
             $parameters['path'] = $path;
-
+            $is_authent = FALSE;
             // If need Authent
             if (isset($possible['route']['Authent'])
                     && isset($possible['route']['Authent']['permission'])
                     && $possible['route']['Authent']['permission'] != ''
                     ) {
+                $is_authent = TRUE;
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
@@ -267,6 +272,11 @@ class Japloora extends Base
 
             $output_datas = $controler->$callback($parameters);
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
+            
+            // log Datas
+            $user_id = (isset($parameters['user_id'])) ? $parameters['user_id'] : '';
+            AuthentAccessLog::write($user_id, $path, $code);
+            
             JSONOutput::end($output_datas['datas'], $code);
         }
         
@@ -288,7 +298,6 @@ class Japloora extends Base
                 'Routing Error' => "The route you'll try accessing not support " . $badvalue . " " . $parameter . '.'
             ],
         );
-        //JSONOutput::end($data, 422);
     }
 
     /**
@@ -296,31 +305,29 @@ class Japloora extends Base
      * @param array $route_data
      * @return array
      */
-    private function validateRouting($route_data)
-    {
-        if (!isset($route_data['strict']) || $route_data['strict'] === true) {
-            if (isset($route_data['scheme'])) {
-                if (!is_array($route_data['scheme'])) {
-                    $schemes = array($route_data['scheme']);
-                } else {
-                    $schemes = $route_data['scheme'];
-                }
-                if (!in_array($this->queryDatas['Schema'], $schemes)) {
-                    return $this->routingError('Schema', $this->queryData['Schema']);
-                }
-            }
-            if (isset($route_data['method'])) {
-                if (!is_array($route_data['method'])) {
-                    $methods = array($route_data['method']);
-                } else {
-                    $methods = $route_data['method'];
-                }
-                if (!in_array($this->queryDatas['Method'], $methods)) {
-                    return $this->routingError('Method', $this->queryData['Method']);
-                }
-            }
+    private function validateRouting($route_data) {  
+        
+        if(!$this->routingItemValidator($route_data['scheme'], $this->queryDatas['Schema'], ROUTE_PARAMETER_SCHEME_HTTP)) {
+             return $this->routingError('Schema', $this->queryData['Schema']);
         }
+        
+        if(!$this->routingItemValidator($route_data['method'], $this->queryDatas['Method'], ROUTE_PARAMETER_METHOD_GET)) {
+             return $this->routingError('Method', $this->queryData['Method']);
+        }
+
         return [];
+    }
+    
+    private function routingItemValidator($value, $target, $default) {
+
+        $item = (!isset($route_data[$value])) ? isset($route_data[$value]) : [$default];
+        if (!is_array($item)) {
+            $item = [$item];
+        }
+        if (!in_array($target, $item)) {
+            return FALSE;
+        }
+        return TRUE;
     }
 
     /**

@@ -78,7 +78,6 @@ class AuthentDataBase
     {
         $this->updateDataCache();
         $id = $datas->Id;
-        unset($datas->Id);
         $this->CacheDatas[$id] = $datas;
         $this->writeDatas();
         return '';
@@ -91,10 +90,28 @@ class AuthentDataBase
      */
     private function insert($datas)
     {
-        $datas->Id = count($this->CacheDatas);
+        $datas->Id = $this->getFreeId();
         $this->CacheDatas[] = $datas;
         $this->writeDatas();
         return $datas->Id;
+    }
+
+    /**
+     * Found free id in Database
+     * @return int
+     */
+    private function getFreeId()
+    {
+        $all_keys = array_keys($this->getAllUsers());
+        sort($all_keys);
+        $start = 0;
+        if (is_array($all_keys) && count($all_keys) > 0) {
+            while (in_array($start, $all_keys)) {
+                $start++;
+            }
+        }
+
+        return $start;
     }
 
     /**
@@ -228,7 +245,7 @@ class AuthentDataBase
         foreach (array_keys($this->CacheDatas) as $key) {
             $collection[$key] = ['Id' => $key];
         }
-        
         return $collection;
+
     }
 }
