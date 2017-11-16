@@ -5,7 +5,7 @@ namespace Japloora;
 /**
  * Abstract class for all controler
  */
-abstract class ControlerBase
+abstract class ControllerBase
 {
 
     /**

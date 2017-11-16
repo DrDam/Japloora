@@ -68,8 +68,8 @@ class Japloora extends Base
         $this->queryDatas = $this->getQueryDatas($request);
         $this->debug = $debug;
 
-        // Autoload Controlers
-        $this->discoverClasses('Controler');
+        // Autoload Controllers
+        $this->discoverClasses('Controller');
 
         // prepare routing
         $this->findAllRoutes();
@@ -119,8 +119,8 @@ class Japloora extends Base
      */
     private function findAllRoutes()
     {
-        $defined_controlers = $this->getImplementation('Controler');
-        foreach ($defined_controlers as $classname) {
+        $defined_controllers = $this->getImplementation('Controller');
+        foreach ($defined_controllers as $classname) {
             $local_routes = $classname::defineRoutes();
             $routes = array();
             foreach ($local_routes as $route_name => $route) {
@@ -143,7 +143,7 @@ class Japloora extends Base
     }
 
     /**
-     * Find & execute correct controler
+     * Find & execute correct controller
      * @param string $path
      * @return mixed
      */
@@ -160,7 +160,7 @@ class Japloora extends Base
         }
 
         if ($this->debug === true) {
-            Watchdog::write($path, 'ROOTED PATH');
+            Watchdog::write($path, 'ROUTED PATH');
         }
 
         foreach ($this->routes as $classname => $routes) {
@@ -279,10 +279,10 @@ class Japloora extends Base
             }
 
             // Call the Callback
-            $controler = new $possible['class']($this->queryDatas);
+            $controller = new $possible['class']($this->queryDatas);
             $callback = $possible['route']['callback'];
 
-            $output_datas = $controler->$callback($parameters);
+            $output_datas = $controller->$callback($parameters);
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
 
             // log Datas

@@ -1,12 +1,12 @@
 <?php
 
-namespace Japloora\Authent\Controler;
+namespace Japloora\Authent\Controller;
 
-use Japloora\ControlerBase;
+use Japloora\ControllerBase;
 use Japloora\JSONOutput;
 use Japloora\Authent\AuthentFactory;
 
-class AuthentControler extends ControlerBase
+class AuthentControler extends ControllerBase
 {
 
     public static function defineRoutes()
