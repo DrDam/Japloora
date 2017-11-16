@@ -6,7 +6,7 @@ use Japloora\ControllerBase;
 use Japloora\JSONOutput;
 use Japloora\Authent\AuthentFactory;
 
-class AuthentControler extends ControllerBase
+class AuthentController extends ControllerBase
 {
 
     public static function defineRoutes()
