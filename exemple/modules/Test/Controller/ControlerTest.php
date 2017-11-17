@@ -3,10 +3,16 @@
 namespace Test;
 
 use Japloora\ControlerBase;
+use Japloora\Config;
 
 class ControlerTest extends ControlerBase
 {
 
+    private $conf;
+    
+    public function __construct() {
+        $this->conf = new Config("Test.test");
+    }
     /**
      *
      * definition of a route :
@@ -78,12 +84,12 @@ class ControlerTest extends ControlerBase
     public function test($params)
     {
         // JSON OutPut need JSON Encodable Variable
-        return ['datas' => ["toto" => $params]];
+        return ['datas' => [$this->conf->get('label1') => $params]];
     }
 
     public function testParameters($params, $path)
     {
       // $params = ['Param1' => "value param" , 'Param2' => "value param" ];
-        return array('datas' => ["out" => $params]);
+        return array('datas' => ["out" => $params, ['conf' => $this->conf->get('page_2.label')]]);
     }
 }
