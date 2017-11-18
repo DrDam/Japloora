@@ -19,10 +19,10 @@ class Base
     //put your code here
     
     /**
-     * Find all controlers
+     * Find all class extending $base classe
      * @return type
      */
-    public static function getImplementation($base)
+    public static function getExtends($base)
     {
 
         $children = array();
@@ -33,6 +33,20 @@ class Base
         }
                
         return $children;
+    }
+        /**
+     * Find all class implementing $interface
+     * @return type
+     */
+    public static function getImplementation($interface)
+    {
+        $classes = [];
+        foreach (get_declared_classes() as $className) {
+            if (in_array($interface, class_implements($className))) {
+                $classes[] = $className;
+            }
+        }
+        return $classes;
     }
     
     public static function discoverClasses($type)
@@ -54,7 +68,7 @@ class Base
                         if ($file === '.' || $file === '..') {
                             continue;
                         }
-                  
+                                  
                         if (strstr($file, $type)) {
                             require_once $base. '/' . $module . '/' . $type . '/' . $file;
                         }

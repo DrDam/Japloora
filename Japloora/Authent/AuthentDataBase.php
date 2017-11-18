@@ -3,6 +3,7 @@
 namespace Japloora\Authent;
 
 use Japloora\Authent\AuthentBase;
+use Japloora\Authent\AuthentManager;
 
 class AuthentDataBase
 {
@@ -28,16 +29,6 @@ class AuthentDataBase
     protected function __construct()
     {
         $this->updateDataCache();
-    }
-
-    /**
-     * Database Hash method
-     * @param string $string
-     * @return string
-     */
-    public static function hash($string)
-    {
-        return md5($string);
     }
 
     /**
@@ -70,6 +61,10 @@ class AuthentDataBase
         return $out;
     }
 
+    public function updateUser($user) {
+       $this->write($user);
+    }
+    
     /**
      * Update a User Data
      * @param type $datas
@@ -123,21 +118,6 @@ class AuthentDataBase
         file_put_contents(AuthentBase::getDBUser(), json_encode($this->CacheDatas));
     }
 
-    /**
-     * Check login/pass related
-     * @param strin $login
-     * @param strin $pass
-     * @return boolean
-     */
-    public function authentify($login, $pass)
-    {
-        foreach ($this->CacheDatas as $id => $datas) {
-            if ($datas->Login == $login && $datas->Pass == self::hash($pass)) {
-                return $id;
-            }
-        }
-        return false;
-    }
 
     /**
      * Return User Data from id
@@ -158,54 +138,18 @@ class AuthentDataBase
         }
         return null;
     }
-
-    /**
-     * Generate authentification token
-     * @param int $userId
-     * @param bool $saveToken
-     * @return array
-     */
-    public function generateToken($userId, $saveToken = true)
+    
+    public function getUserByLogin($login)
     {
-        $user = $this->getUser($userId, true);
-
-        $hash = self::hash($user->Pass);
-        $salt = floor(time() / 1000);
-        $token = self::hash($user->Login . $hash . $salt);
-
-        if ($saveToken === true) {
-            $user->Token = $token;
-            $user->Id = $userId;
-            $this->write($user);
-        }
-
-        $token_data = ['token' => $token, 'expiration' => ($salt + 1) * 1000];
-        return $token_data;
-    }
-
-    /**
-     * Check authentification token
-     * @param string $token
-     * @return array
-     */
-    public function checkToken($token)
-    {
-        $status = false;
-        $message = '';
-        //1 Get user
-        $user_id = $this->getUserByToken($token);
-
-        if ($user_id !== null) {
-            //2 Test if Token not expired
-            $valid_token = $this->generateToken($user_id, false);
-
-            if ($valid_token != null && $token === $valid_token['token']) {
-                return ['status' => true, 'user_id' => $user_id];
-            } else {
-                $message = 'Exprired Token';
+        $this->updateDataCache();
+        foreach($this->CacheDatas as $user_id => $user) {
+            if($user->Login === $login) {
+                unset($user->Token);
+                $user->Id = $user_id;
+                return $user;
             }
         }
-        return ['status' => $status, 'message' => $message];
+        return null;
     }
 
     /**
@@ -224,18 +168,6 @@ class AuthentDataBase
     }
 
     /**
-     * Check if userId has Permission
-     * @param type $user_id
-     * @param type $permission
-     * @return Boolean
-     */
-    public function userAccess($user_id, $permission)
-    {
-        $user = $this->getUser($user_id);
-        return (in_array($permission, $user->Permissions));
-    }
-
-    /**
      * Get All Users
      * @return array
      */
@@ -249,10 +181,14 @@ class AuthentDataBase
         return $collection;
     }
 
-    public function delete($user_id)
+    public function deleteUser($user_id)
     {
         $this->updateDataCache();
         unset($this->CacheDatas[$user_id]);
         $this->writeDatas();
+    }
+    
+    public function createUser($user) {
+        $this->write($user);
     }
 }

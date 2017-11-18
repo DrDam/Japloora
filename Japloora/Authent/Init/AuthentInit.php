@@ -8,12 +8,13 @@ namespace Japloora\Authent\Init;
 use Japloora\InitBase;
 use Japloora\Authent\AuthentBase;
 use Japloora\Authent\AuthentDataBase;
-use Japloora\Authent\AuthentFactory;
+use Japloora\Authent\AuthentManager;
 
 class AuthentInit extends InitBase
 {
     public static function initialize($conf)
     {
+        
         // Create all files of DB
         if (!is_dir(AuthentBase::getDBRoute())) {
             mkdir(AuthentBase::getDBRoute());
@@ -32,10 +33,10 @@ class AuthentInit extends InitBase
         
         $data = new \stdClass();
         $data->Login = $su['login'];
-        $data->Pass = AuthentDataBase::hash($su['pass']);
+        $data->Pass = $su['pass'];
         $data->Permissions = ['su'];
 
-        $authentDB = AuthentFactory::connexion();
-        $authentDB->write($data);
+        $authentDB = AuthentManager::connexion();
+        $authentDB->makeUser($data);
     }
 }

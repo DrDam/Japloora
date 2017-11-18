@@ -24,7 +24,7 @@ define('ROUTE_PARAMETER_METHOD_DELETE', 'DELETE');
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Yaml\Yaml;
-use Japloora\Authent\AuthentFactory;
+use Japloora\Authent\AuthentManager;
 use Japloora\Authent\AuthentAccessLog;
 use Japloora\Watchdog;
 use Japloora\JSONOutput;
@@ -55,11 +55,20 @@ class Japloora extends Base
     private $debug;
 
     /**
+     * Master Logger
+     * @var Japloora\Authent\AuthentAccessLog
+     */
+    private $logger;
+    
+    /**
      * Constructor
      * @param Request $request
      */
     public function __construct(Request $request, $debug = false)
     {
+        // Create logger
+        $this->logger = new AuthentAccessLog();
+        
         if (file_exists(JAPLOORA_DOC_ROOT . '/init/init.yml')) {
             $this->initialization();
             // Delete intialization file after first runing
@@ -90,7 +99,7 @@ class Japloora extends Base
 
         // Find Init Classes
         $this->discoverClasses('Init');
-        $initialisers = $this->getImplementation('Init');
+        $initialisers = $this->getExtends('Init');
 
         // Run All Initializers
         foreach ($initialisers as $initialiser) {
@@ -119,7 +128,7 @@ class Japloora extends Base
      */
     private function findAllRoutes()
     {
-        $defined_controllers = $this->getImplementation('Controller');
+        $defined_controllers = $this->getExtends('Controller');
         foreach ($defined_controllers as $classname) {
             $local_routes = $classname::defineRoutes();
             $routes = array();
@@ -257,7 +266,7 @@ class Japloora extends Base
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
                 $token_value = explode(' ', $auth_head[0])[1];
-                $db = AuthentFactory::connexion();
+                $db = AuthentManager::connexion();
                 $validation = $db->checkToken($token_value);
                 if (isset($possible['route']['authent']['permission'])) {
                     if ($db->userAccess(
@@ -265,7 +274,7 @@ class Japloora extends Base
                         $possible['route']['authent']['permission']
                     )
                                 === false) {
-                        AuthentAccessLog::write($validation['user_id'], $this->queryDatas['Method'], $path, 403);
+                        $this->logger->log($validation['user_id'], $this->queryDatas['Method'], $path, 403);
                         JSONOutput::send403();
                     }
                 }
@@ -293,13 +302,13 @@ class Japloora extends Base
                     $user_id = $this->queryDatas['Query']['Login'];
                 }
             }
-            AuthentAccessLog::write($user_id, $this->queryDatas['Method'], $path, $code);
+            $this->logger->log($user_id, $this->queryDatas['Method'], $path, $code);
 
             JSONOutput::end($output_datas['datas'], $code);
         }
 
         // There is no rout, return 404
-        AuthentAccessLog::write('', $this->queryDatas['Method'], $path, 404);
+        $this->logger->log('', $this->queryDatas['Method'], $path, 404);
         JSONOutput::send404();
     }
 
@@ -387,7 +396,7 @@ class Japloora extends Base
                 if ($type == ROUTE_PARAMETER_TYPE_ARRAY && !is_array($parameter)) {
                     throw new \Exception('The paramater ' . $key . ' need array data.');
                 }
-                if ($type == ROUTE_PARAMETER_TYPE_INT && !is_int($parameter)) {
+                if ($type == ROUTE_PARAMETER_TYPE_INT && !is_int($parameter + 0)) {
                     throw new \Exception('The paramater ' . $key . ' need integer data.');
                 }
                 if ($type == ROUTE_PARAMETER_TYPE_BOOL && !is_bool($parameter)) {
