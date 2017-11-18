@@ -16,7 +16,7 @@ class AuthentAccessLog extends Base
         $classes = $this->getImplementation('Japloora\Authent\LoggerInterface');
         
         foreach ($classes as $className) {
-            $loggers[$className::get_id()] = new $className();
+            $loggers[$className::getId()] = new $className();
         }
         $this->loggers = $loggers;
     }
