@@ -265,6 +265,7 @@ class Japloora extends Base
                 $is_authent = true;
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
+                // expected form : authorization : Token XXXXXXXXXXXXXXXXX
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentManager::connexion();
                 $validation = $db->checkToken($token_value);
@@ -291,7 +292,8 @@ class Japloora extends Base
             $controller = new $possible['class']($this->queryDatas);
             $callback = $possible['route']['callback'];
 
-            $output_datas = $controller->$callback($parameters);
+            $controller->setParameters($parameters);
+            $output_datas = $controller->$callback();
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
 
             // log Datas

@@ -85,10 +85,10 @@ class AuthentController extends ControllerBase
      * @param type $params
      * @return type
      */
-    public function generateToken($params)
+    public function generateToken()
     {
-        $pass = $params['Query']['Pass'];
-        $login = $params['Query']['Login'];
+        $pass = $this->parameters['Query']['Pass'];
+        $login = $this->parameters['Query']['Login'];
 
 
         $userId = $this->authentDB->authentify($login, $pass);
@@ -101,16 +101,16 @@ class AuthentController extends ControllerBase
         return array('datas' => ["token" => $token_data['token'], 'expiration' => $token_data['expiration']]);
     }
 
-    public function getUsers($params)
+    public function getUsers()
     {
         $users = $this->authentDB->getAllUsers();
 
         return array('datas' => $users);
     }
 
-    public function deleteUser($params)
+    public function deleteUser()
     {
-        $query = $params['queryFragments'];
+        $query = $this->parameters['queryFragments'];
 
         $user = $this->authentDB->getUser($query[0]);
 
@@ -128,47 +128,47 @@ class AuthentController extends ControllerBase
         }
     }
 
-    public function getUser($params)
+    public function getUser()
     {
 
-        $query = $params['queryFragments'];
+        $query = $this->parameters['queryFragments'];
 
         $user = $this->authentDB->getUser($query[0]);
 
         return array('datas' => $user);
     }
 
-    public function addUser($params)
+    public function addUser()
     {
-        $permissions = (isset($params['Query']['Permissions'])
-                && is_array($params['Query']['Permissions']))
-                    ? $params['Query']['Permissions']
+        $permissions = (isset($this->parameters['Query']['Permissions'])
+                && is_array($this->parameters['Query']['Permissions']))
+                    ? $this->parameters['Query']['Permissions']
                     : ['read'];
         $new_user = new \stdClass();
-        $new_user->Login = $params['Query']['Login'];
+        $new_user->Login = $this->parameters['Query']['Login'];
         $new_user->Permissions = $permissions;
-        $new_user->Pass = $params['Query']['Pass'];
+        $new_user->Pass = $this->parameters['Query']['Pass'];
 
         $user_id = $this->authentDB->makeUser($new_user);
 
         return [
-            'datas' => array("query" => $params['Query'], 'user_id' => $user_id),
+            'datas' => array("query" => $this->parameters['Query'], 'user_id' => $user_id),
             'code' => 201,
         ];
     }
 
-    public function updateUser($params)
+    public function updateUser()
     {
-        $query = $params['queryFragments'];
+        $query = $this->parameters['queryFragments'];
 
         $user = $this->authentDB->getUser($query[0]);
 
         if ($user != null) {
-            $new_user = $this->makeUser($params);
+            $new_user = $this->makeUser($this->parameters);
             $new_user->Id = $query[0];
             $user_id = $this->authentDB->write($new_user);
             return [
-                'datas' => array("query" => $params['Query'], 'user_id' => $user_id),
+                'datas' => array("query" => $this->parameters['Query'], 'user_id' => $user_id),
                 'code' => 201,
             ];
         }

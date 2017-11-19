@@ -21,11 +21,11 @@ class AuthentAccessLog extends Base
         $this->loggers = $loggers;
     }
     
-    public function log($user_id, $method, $url, $code)
+    public function log($login, $method, $url, $code)
     {       
         $datas = [
             'timestamp' => time(),
-            'user_id' => $user_id,
+            'user_login' => $login,
             'method' => $method,
             'url' => $url,
             'http_code' => $code

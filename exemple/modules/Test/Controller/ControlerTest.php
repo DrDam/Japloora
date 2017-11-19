@@ -81,15 +81,15 @@ class ControlerTest extends ControlerBase
         );
     }
 
-    public function test($params)
+    public function test()
     {
         // JSON OutPut need JSON Encodable Variable
-        return ['datas' => [$this->conf->get('label1') => $params]];
+        return ['datas' => [$this->conf->get('label1'), $this->parameters]];
     }
 
-    public function testParameters($params, $path)
+    public function testParameters()
     {
       // $params = ['Param1' => "value param" , 'Param2' => "value param" ];
-        return array('datas' => ["out" => $params, ['conf' => $this->conf->get('page_2.label')]]);
+        return array('datas' => ["out" => $this->parameters, ['conf' => $this->conf->get('page_2.label')]]);
     }
 }

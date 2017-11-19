@@ -8,21 +8,12 @@ namespace Japloora;
 abstract class ControllerBase
 {
 
-    /**
-     * Datas extract from HttpFoundation Request
-     * @var array
-     */
-    protected $queryData;
+    protected $parameters;
 
-    /**
-     * Contructors
-     * @param array $queryData
-     */
-    public function __construct($queryData)
-    {
-        $this->queryData = $queryData;
+    public function setParameters($param) {
+        $this->parameters = $param;
     }
-
+    
     /**
      * Defined route binded by module
      */
@@ -32,6 +23,6 @@ abstract class ControllerBase
      * Callback exemple
      */
     /*
-     * public function callback($parameters)
+     * public function callback()
      */
 }
