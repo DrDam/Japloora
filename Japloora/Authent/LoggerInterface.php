@@ -15,6 +15,7 @@ namespace Japloora\Authent;
  */
 interface LoggerInterface
 {
-    public function log($array);
     static public function getId();
+    public function flush();
+    public function log($array);
 }

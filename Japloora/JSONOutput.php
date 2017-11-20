@@ -43,6 +43,6 @@ class JSONOutput
         $datas = [
             'error' => ($message != '') ? $message : "Your are not authorize to access on this ressource",
         ];
-        self::end($datas, 404);
+        self::end($datas, 403);
     }
 }

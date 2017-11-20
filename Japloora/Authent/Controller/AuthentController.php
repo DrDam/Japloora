@@ -5,6 +5,7 @@ namespace Japloora\Authent\Controller;
 use Japloora\ControllerBase;
 use Japloora\JSONOutput;
 use Japloora\Authent\AuthentManager;
+use Japloora\Authent\AuthentAccessLog;
 
 class AuthentController extends ControllerBase
 {
@@ -76,6 +77,13 @@ class AuthentController extends ControllerBase
                         'type' => ROUTE_PARAMETER_TYPE_ARRAY
                     ],
                 ],
+            ),
+            array(
+                'path' => 'flush',
+                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
+                'method' => [ROUTE_PARAMETER_METHOD_DELETE],
+                'authent' => ['permission' => 'su'],
+                'callback' => 'flushLog',
             ),
         );
     }
@@ -173,5 +181,9 @@ class AuthentController extends ControllerBase
             ];
         }
     }
-
+    
+    public function flushLog() {
+        $this->logger = new AuthentAccessLog();
+        $this->logger->flush();
+    }
 }

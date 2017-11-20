@@ -20,6 +20,7 @@ define('ROUTE_PARAMETER_SCHEME_HTTPS', 'https');
 define('ROUTE_PARAMETER_METHOD_GET', 'GET');
 define('ROUTE_PARAMETER_METHOD_POST', 'POST');
 define('ROUTE_PARAMETER_METHOD_PATCH', 'PATCH');
+define('ROUTE_PARAMETER_METHOD_PUT', 'PUT');
 define('ROUTE_PARAMETER_METHOD_DELETE', 'DELETE');
 
 use Symfony\Component\HttpFoundation\Request;
@@ -265,6 +266,9 @@ class Japloora extends Base
                 $is_authent = true;
                 $headers = $this->queryDatas['Headers'];
                 $auth_head = $headers['authorization'];
+                if($auth_head == NULL) {
+                    JSONOutput::send403();
+                }
                 // expected form : authorization : Token XXXXXXXXXXXXXXXXX
                 $token_value = explode(' ', $auth_head[0])[1];
                 $db = AuthentManager::connexion();
@@ -295,7 +299,7 @@ class Japloora extends Base
             $controller->setParameters($parameters);
             $output_datas = $controller->$callback();
             $code = (isset($output_datas['code'])) ? $output_datas['code'] : 200;
-
+            $output = (isset($output_datas['datas'])) ? $output_datas['datas'] : [];
             // log Datas
             $user_id = (isset($parameters['user_id'])) ? $parameters['user_id'] : null;
 
@@ -306,7 +310,7 @@ class Japloora extends Base
             }
             $this->logger->log($user_id, $this->queryDatas['Method'], $path, $code);
 
-            JSONOutput::end($output_datas['datas'], $code);
+            JSONOutput::end($output, $code);
         }
 
         // There is no rout, return 404

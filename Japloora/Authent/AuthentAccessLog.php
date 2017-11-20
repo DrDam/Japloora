@@ -41,4 +41,16 @@ class AuthentAccessLog extends Base
         }
     }
     
+    public function flush() {
+                
+        if(count($this->loggers) > 0 ) {
+            foreach($this->loggers as $logger_id => $logger_class) {
+                $logger_class->flush();
+            }
+        }
+        else {
+            file_put_contents(AuthentBase::getDBlog(), '');
+        }
+    }
+    
 }
