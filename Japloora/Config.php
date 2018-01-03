@@ -27,8 +27,13 @@ class Config
      */
     public function __construct($config_name) {
         list($module, $config_filename) = explode('.', $config_name);
-        
-        $file_path = $this->getfilePath($module, $config_filename);
+
+        try{
+            $file_path = $this->getfilePath($module, $config_filename);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
         
         if($file_path != NULL) {
             try {
@@ -84,6 +89,10 @@ class Config
     private function getfilePath($module_name, $config_filename) {
         $roots = [JAPLOORA_DOC_ROOT. '/modules', __DIR__];
 
+        if($module_name == '') {
+            return $this->getConfigFileInModule(JAPLOORA_DOC_ROOT, $config_filename); 
+        }
+        
         foreach($roots as $root) {
             $modules = scandir($root);
             $base = $root;
@@ -92,14 +101,20 @@ class Config
                     continue;
                 }
                 if($module == $module_name) {
-                    $path = $base. '/' . $module .  '/Config';
-
-                    if(file_exists($path . '/' . $config_filename . '.conf.yml')) {
-                        return $path . '/' . $config_filename . '.conf.yml';
-                    }
+                    return $this->getConfigFileInModule($base .'/'. $module, $config_filename);
                 }
             }
         }
-        return NULL;
+    }
+    
+    private function getConfigFileInModule($directory_path, $config_filename){
+         $path = $directory_path .  '/Config';
+
+        if(file_exists($path . '/' . $config_filename . '.conf.yml')) {
+            return $path . '/' . $config_filename . '.conf.yml';
+        }
+        else {
+            throw new \Exception('file : "' . $path . '/' . $config_filename . '.conf.yml"' . ' not found');
+        }
     }
 }
