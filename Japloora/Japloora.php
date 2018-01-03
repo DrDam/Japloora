@@ -182,22 +182,35 @@ class Japloora extends Base
                 }
 
                 // If Route contaning wild card,
-                if (substr($route_name, -1, 1) == '*') {
-                    $fragment = substr($route_name, 0, strlen($route_name) - 1);
-                    if (strstr($path, $fragment)) {
-                        $new_end = strlen($path) - strlen($fragment);
-                        // Find more exactly path
-                        if ($new_end < $end) {
-                            $validated = ($this->validateRouting($route_data) == []);
-                            if ($validated === false) {
-                                continue;
-                            }
-                            $possible['route'] = $route_data;
-                            $possible['class'] = $classname;
-                            $end = $new_end;
-                        }
-                    }
-                } else {
+                if(strstr($route_name, '*')) {
+                   $route_fragments = explode('/', $route_name) ;
+                   $path_fragments = explode('/', $path) ;
+                   
+
+                   // clean path for "mandatory" fragment
+                   foreach($path_fragments as $key => $fragment) {
+                       if(isset($route_fragments[$key]) && $route_fragments[$key] != "*" && $route_fragments[$key] == $path_fragments[$key] ) {
+                           unset($path_fragments[$key]);
+                       }                
+                   }
+                   
+                   // test if only rest wildcarde
+                   foreach($path_fragments as $key => $fragment) {
+                       if(!isset($route_fragments[$key]) || $route_fragments[$key] != "*" ) {
+                           continue 2;
+                       }
+                   }
+                   
+                   $validated = ($this->validateRouting($route_data) == []);
+                   if ($validated === false) {
+                        continue;
+                   }
+                   
+                   $end = count($path_fragments[$key]);
+                   $possible['route'] = $route_data;
+                   $possible['class'] = $classname;
+                }
+                else {
                     //  If Route have exact definition
                     if ($route_name == $path) {
                         $new_validated = ($this->validateRouting($route_data) == []);
