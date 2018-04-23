@@ -186,6 +186,11 @@ class Japloora extends Base
                    $route_fragments = explode('/', $route_name) ;
                    $path_fragments = explode('/', $path) ;
                    
+                   // If route as not the same number of fragments, next
+                   if(count($route_fragments) != count($path_fragments)) {
+                    continue;
+                   }
+                       
 
                    // clean path for "mandatory" fragment
                    foreach($path_fragments as $key => $fragment) {
@@ -283,7 +288,7 @@ class Japloora extends Base
                     JSONOutput::send403();
                 }
                 // expected form : authorization : Token XXXXXXXXXXXXXXXXX
-                $token_value = explode(' ', $auth_head[0])[1];
+                $token_value = str_replace('Token ', '', $auth_head[0]);
                 $db = AuthentManager::connexion();
                 $validation = $db->checkToken($token_value);
                 if (isset($possible['route']['authent']['permission'])) {
