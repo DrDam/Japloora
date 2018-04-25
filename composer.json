@@ -2,7 +2,7 @@
     "name": "japloora/japloora",
     "description": "Just Another PHP Lightweight Object Oriented RestAPI",
     "type": "project",
-    "license": "GPL V3",
+    "license": "GPL-3.0-or-later",
     "authors": [
         {
             "name": "DrDam",
