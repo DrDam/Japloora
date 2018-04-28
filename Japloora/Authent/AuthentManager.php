@@ -130,7 +130,6 @@ class AuthentManager extends Base
     
     
     public function makeUser($user) {
-        var_dump($user);
         $user->Pass = $this->hash($user->Pass);
         $this->createUser($user);
     }
