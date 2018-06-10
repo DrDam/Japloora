@@ -22,12 +22,15 @@ class Base
      * Find all class extending $base classe
      * @return type
      */
-    public static function getExtends($base)
+    public static function getExtends($base, $root = 'Japloora')
     {
+        if($root == 'Japloora') {
+            $base .= 'Base';
+        }
 
         $children = array();
         foreach (get_declared_classes() as $class) {
-            if (is_subclass_of($class, 'Japloora\\' . $base . 'Base', true)) {
+            if (is_subclass_of($class, $root . '\\' . $base , true)) {
                 $children[] = $class;
             }
         }
