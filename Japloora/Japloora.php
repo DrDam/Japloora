@@ -246,9 +246,12 @@ class Japloora extends Base
                 Watchdog::write($possible['class'] . '->' . $possible['route']['callback'], 'RUNABLE CALLBACK');
             }
 
-            // If the best correspondance contain validation Error
+            // If the best correspondance not be validated yet
             if ($validated === false) {
-                JSONOutput::end($this->validateRouting($possible['route']));
+                $errors = $this->validateRouting($possible['route']);
+                if($errors != []) {
+                    JSONOutput::end($this->validateRouting($possible['route']));
+                }
             }
 
             // If route define parameters, they are bind
