@@ -4,6 +4,7 @@ namespace Japloora\Authent;
 
 use Japloora\Authent\AuthentBase;
 use Japloora\Base;
+use Firebase\JWT\JWT;
 
 class AuthentManager extends Base
 {
@@ -11,6 +12,27 @@ class AuthentManager extends Base
     private $authent_db;
     private static $instance;
 
+    public static function checkToken($token) {
+        
+        $token_fragments = explode('.', $token);
+        if(count($token_fragments) != 3) {
+            // Flag Error
+        }
+        list($headb64, $bodyb64, $cryptob64) = $token_fragments;
+        if (null === $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64))) {
+            // Flag Error
+        }
+
+        $db = self::connexion();
+        $user = $db->getUser($payload->use, TRUE);
+        
+        if($user == Null || $user->site != $payload->sub) {
+            // Flag Error
+        }
+
+        $data = JWT::decode($token, $user->pass, ['HS256']);
+    }
+    
     /**
      * Connect to Authent DB
      * @return AuthentDataBase
@@ -22,6 +44,9 @@ class AuthentManager extends Base
         }
         return self::$instance;
     }
+    
+
+    
     /**
      * Refresh Database
      */
@@ -48,58 +73,6 @@ class AuthentManager extends Base
     {
         return md5($string);
     }
-
-    /**
-     * Check authentification token
-     * @param string $token
-     * @return array
-     */
-    public function checkToken($token)
-    {
-        $status = false;
-        $message = '';
-        //1 Get user
-        $user = $this->getUserByToken($token);
-
-        $user_id = $user->Id;
-        
-        if ($user_id !== null) {
-            //2 Test if Token not expired
-            $valid_token = $this->generateToken($user_id, false);
-            if ($valid_token != null && $token === $valid_token['token']) {
-                return ['status' => true, 'user_id' => $user_id];
-            } else {
-                $message = 'Exprired Token';
-            }
-        }
-        return ['status' => $status, 'message' => $message];
-    }
-
-    
-    
-   /**
-     * Generate authentification token
-     * @param int $userId
-     * @param bool $saveToken
-     * @return array
-     */
-    public function generateToken($userId, $saveToken = true)
-    {
-        $user = $this->getUser($userId, true);
-
-        $hash = $this->hash($user->Pass);
-        $salt = floor(time() / 1000);
-        $token = $this->hash($user->Login . $hash . $salt);
-
-        if ($saveToken === true) {
-            $user->Token = $token;
-            $user->Id = $userId;
-            $this->updateUser($user);
-        }
-
-        $token_data = ['token' => $token, 'expiration' => ($salt + 1) * 1000];
-        return $token_data;
-    }
     
     /**
      * Check if userId has Permission
@@ -111,21 +84,6 @@ class AuthentManager extends Base
     {
         $user = $this->getUser($user_id);
         return (in_array($permission, $user->Permissions));
-    }
-
-        /**
-     * Check login/pass related
-     * @param strin $login
-     * @param strin $pass
-     * @return boolean
-     */
-    public function authentify($login, $pass)
-    {
-        $user = $this->getUserByLogin($login);
-        if ($user->Login == $login && $user->Pass == $this->hash($pass)) {
-            return $user->Id;
-        }
-        return false;
     }
     
     
@@ -160,17 +118,7 @@ class AuthentManager extends Base
     {
         return $this->authent_db->getAllUsers();
     }
-    
-     /**
-     * Extract User who generate tocken
-     * @param string $token
-     * @return int|null
-     */
-    private function getUserByToken($token)
-    {
-        return $this->authent_db->getUserByToken($token);
-    }
-    
+        
     public function getUserByLogin($login)
     {
         return $this->authent_db->getUserByLogin($login);

@@ -129,7 +129,6 @@ class AuthentDataBase
         $this->updateDataCache();
         if (isset($this->CacheDatas[$user_id])) {
             $user = $this->CacheDatas[$user_id];
-            unset($user->Token);
             if ($withPass === false) {
                 unset($user->Pass);
             }
@@ -144,24 +143,8 @@ class AuthentDataBase
         $this->updateDataCache();
         foreach($this->CacheDatas as $user_id => $user) {
             if($user->Login === $login) {
-                unset($user->Token);
                 $user->Id = $user_id;
                 return $user;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Extract User who generate tocken
-     * @param string $token
-     * @return int|null
-     */
-    private function getUserByToken($token)
-    {
-        foreach ($this->CacheDatas as $key => $user) {
-            if ($user->Token === $token) {
-                return $key;
             }
         }
         return null;

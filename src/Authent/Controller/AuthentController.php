@@ -20,16 +20,6 @@ class AuthentController extends ControllerBase
     {
         return array(
             array(
-                'path' => 'authent',
-                'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
-                'method' => [ROUTE_PARAMETER_METHOD_POST],
-                'parameters' => [
-                    'Login' => [],
-                    'Pass' => [],
-                ],
-                'callback' => 'generateToken',
-            ),
-            array(
                 'path' => 'users',
                 'scheme' => [ROUTE_PARAMETER_SCHEME_HTTP, ROUTE_PARAMETER_SCHEME_HTTPS],
                 'authent' => ['permission' => 'su'],
@@ -86,27 +76,6 @@ class AuthentController extends ControllerBase
                 'callback' => 'flushLog',
             ),
         );
-    }
-
-    /**
-     * Return Token to User
-     * @param type $params
-     * @return type
-     */
-    public function generateToken()
-    {
-        $pass = $this->parameters['Query']['Pass'];
-        $login = $this->parameters['Query']['Login'];
-
-
-        $userId = $this->authentDB->authentify($login, $pass);
-        if ($userId === false) {
-            JSONOutput::send403();
-        }
-
-        $token_data = $this->authentDB->generateToken($userId);
-
-        return array('datas' => ["token" => $token_data['token'], 'expiration' => $token_data['expiration']]);
     }
 
     public function getUsers()

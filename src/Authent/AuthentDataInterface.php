@@ -20,9 +20,7 @@ interface AuthentDataInterface
     public function getUser($user_id, $withPass = false);
 
     public function getAllUsers();
-    
-    public function getUserByToken($token);
-    
+        
     public function updateUser($user);
 
     public function deleteUser($user_id);

@@ -30,6 +30,8 @@ use Japloora\Authent\AuthentAccessLog;
 use Japloora\Watchdog;
 use Japloora\JSONOutput;
 use Japloora\Base;
+use Japloora\JJWT;
+
 
 /**
  * Core Object
@@ -279,6 +281,7 @@ class Japloora extends Base
             // Add Original Path to parameters
             $parameters['path'] = $path;
             $is_authent = false;
+            
             // If need Authent
             if (isset($possible['route']['authent'])
                     && isset($possible['route']['authent']['permission'])
@@ -290,8 +293,13 @@ class Japloora extends Base
                 if($auth_head == NULL) {
                     JSONOutput::send403();
                 }
+                $token_value = str_replace('Bearer ', '', $auth_head[0]);
+                var_dump($token_value);
+                $user_data = AuthentManager::checkToken($token_value);
+                die();
+                
                 // expected form : authorization : Token XXXXXXXXXXXXXXXXX
-                $token_value = str_replace('Token ', '', $auth_head[0]);
+                
                 $db = AuthentManager::connexion();
                 $validation = $db->checkToken($token_value);
                 if (isset($possible['route']['authent']['permission'])) {
