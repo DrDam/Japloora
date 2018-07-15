@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Japloora": "src/"
+            "Japloora\\": "src/"
         }
     },
     "require-dev": {
