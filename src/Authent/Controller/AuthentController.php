@@ -51,6 +51,7 @@ class AuthentController extends ControllerBase
                         'mandatory' => ROUTE_PARAMETER_OPTIONAL,
                         'type' => ROUTE_PARAMETER_TYPE_ARRAY
                     ],
+                    'Site' => [],
                 ],
             ),
             array(
@@ -143,7 +144,7 @@ class AuthentController extends ControllerBase
         $user = $this->authentDB->getUser($query[0]);
 
         if ($user != null) {
-            $new_user = $this->makeUser($this->parameters);
+            $new_user = $this->authentDB->makeUser($this->parameters);
             $new_user->Id = $query[0];
             $user_id = $this->authentDB->write($new_user);
             return [
