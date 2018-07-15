@@ -32,10 +32,11 @@ The way to use are simple :
 
 Japloora not make Authentification, it only make identification.  
 That mean a user can be identify via a JWT token composed with :
+
 - header almgorithme declaration : "HS256",
--payload : 
--- "sub" parameter : site_key 
--- "use" parameter : my_username
-- secret key are composed with SHA256 encrytption of user_password
+- payload : 
+    - "sub" parameter : site_key 
+    - "use" parameter : my_username
+- secret key are a SHA256 encrytption of user_password
 
 Parameters ( site_key, username and user_password ) are exchange out-of-line and the password where never send from client to server
