@@ -1,4 +1,4 @@
 Authent:
-    login: admin
-    pass: admin
-    site: CNF-API
+    login: username
+    pass: password
+    site: client
