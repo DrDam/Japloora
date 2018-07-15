@@ -30,7 +30,6 @@ use Japloora\Authent\AuthentAccessLog;
 use Japloora\Watchdog;
 use Japloora\JSONOutput;
 use Japloora\Base;
-use Japloora\JJWT;
 
 
 /**
@@ -293,18 +292,17 @@ class Japloora extends Base
                 if($auth_head == NULL) {
                     JSONOutput::send403();
                 }
+                
+                // expected JWT token
                 $token_value = str_replace('Bearer ', '', $auth_head[0]);
-                var_dump($token_value);
-                $user_data = AuthentManager::checkToken($token_value);
-                die();
-                
-                // expected form : authorization : Token XXXXXXXXXXXXXXXXX
-                
-                $db = AuthentManager::connexion();
-                $validation = $db->checkToken($token_value);
+                $validation = AuthentManager::checkToken($token_value);
+                if($validation['user_id'] == NULL) {
+                     JSONOutput::send403($validation['message']);
+                }
+
                 if (isset($possible['route']['authent']['permission'])) {
-                    if ($db->userAccess(
-                        $validation['user_id'],
+                    if (AuthentManager::userAccess(
+                        $validation['user_perm'],
                         $possible['route']['authent']['permission']
                     )
                                 === false) {
@@ -313,12 +311,8 @@ class Japloora extends Base
                     }
                 }
 
-                if ($validation['status'] === false) {
-                    JSONOutput::send403($validation['message']);
-                } else {
-                    // Add User_id to parameters
-                    $parameters['user_id'] = $validation['user_id'];
-                }
+                // Add User_id to parameters
+                $parameters['user_id'] = $validation['user_id'];
             }
 
             // Call the Callback
