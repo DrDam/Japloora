@@ -107,7 +107,12 @@ class AuthentManager extends Base
      */
     public function makeUser($user) {
         $user->Pass = $this->hash($user->Pass);
-        $this->createUser($user);
+        if(isset($user->Id)) {
+            return $this->updateUser($user);
+        }
+        else {
+            return $this->createUser($user);
+        }
     }
     
 

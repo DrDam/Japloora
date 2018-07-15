@@ -119,16 +119,7 @@ class AuthentController extends ControllerBase
 
     public function addUser()
     {
-        $permissions = (isset($this->parameters['Query']['Permissions'])
-                && is_array($this->parameters['Query']['Permissions']))
-                    ? $this->parameters['Query']['Permissions']
-                    : ['read'];
-        $new_user = new \stdClass();
-        $new_user->Login = $this->parameters['Query']['Login'];
-        $new_user->Permissions = $permissions;
-        $new_user->Pass = $this->parameters['Query']['Pass'];
-        $new_user->Site = $this->parameters['Query']['Site'];
-
+        $new_user = $this->prepareUser($this->parameters['Query'], TRUE);
         $user_id = $this->authentDB->makeUser($new_user);
 
         return [
@@ -136,17 +127,37 @@ class AuthentController extends ControllerBase
             'code' => 201,
         ];
     }
+    
+    private function prepareUser($query, $create = false){
+        $permissions = (isset($this->parameters['Query']['Permissions'])
+        && is_array($this->parameters['Query']['Permissions']))
+            ? $this->parameters['Query']['Permissions']
+            : [];
+        $new_user = new \stdClass();
+        $new_user->Login = $this->parameters['Query']['Login'];
+        $new_user->Permissions = $permissions;
+        $new_user->Pass = $this->parameters['Query']['Pass'];
+        $new_user->Site = $this->parameters['Query']['Site'];
+
+        if($create === TRUE && $new_user->Permissions == []) {
+            $new_user->Permissions = ['read'];
+        }
+        
+        return $new_user;
+    }
 
     public function updateUser()
     {
         $query = $this->parameters['queryFragments'];
-
         $user = $this->authentDB->getUser($query[0]);
 
         if ($user != null) {
-            $new_user = $this->authentDB->makeUser($this->parameters);
-            $new_user->Id = $query[0];
-            $user_id = $this->authentDB->write($new_user);
+            $new_data = $this->prepareUser($this->parameters['Query']);
+            $new_data->Id = $query[0];
+            if($new_data->Permissions == []) {
+                unset($new_data->Permissions);
+            }
+            $user_id = $this->authentDB->makeUser($new_data);
             return [
                 'datas' => array("query" => $this->parameters['Query'], 'user_id' => $user_id),
                 'code' => 201,
