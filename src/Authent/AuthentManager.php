@@ -62,7 +62,7 @@ class AuthentManager extends Base
         // Get user Password from DB
         $db = self::connexion();
         $probable_user = $db->getUserByLogin($payload->use, TRUE);      
-        if($probable_user == Null || $probable_user->site != $payload->sub) {
+        if($probable_user == Null || $probable_user->Site != $payload->sub) {
             // Flag Error
         }
 
