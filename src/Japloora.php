@@ -293,6 +293,9 @@ class Japloora extends Base
                     JSONOutput::send403();
                 }
                 
+                if(!strstr($auth_head[0], 'Bearer')) {
+                    JSONOutput::send403('Bearer authentification token not found');
+                }
                 // expected JWT token
                 $token_value = str_replace('Bearer ', '', $auth_head[0]);
                 $validation = AuthentManager::checkToken($token_value);
