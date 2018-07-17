@@ -37,6 +37,9 @@ That mean a user can be identify via a JWT token composed with :
 - payload : 
     - "sub" parameter : site_key 
     - "use" parameter : my_username
-- secret key are a SHA256 encrytption of user_password
+    - "iat" parameter : timestamp in token creation
+- secret key are a SHA256 encrytption of 
+    - SHA256 encrytpted user_password concatenated with timestamp ( 'iat' paremeter)
 
+A token are valid for only 15min. It's recommanded gerenate a new on each call
 Parameters ( site_key, username and user_password ) are exchange out-of-line and the password where never send from client to server

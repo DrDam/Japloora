@@ -52,23 +52,33 @@ class AuthentManager extends Base
         // Pre decode Token getting User_login
         $token_fragments = explode('.', $token);
         if(count($token_fragments) != 3) {
-            // Flag Error
+            return ['user_id' => NULL, 'user_perm' => [], 'message' => 'JWT Token malformed'];
         }
         list($headb64, $bodyb64, $cryptob64) = $token_fragments;
         if (null === $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64))) {
-            // Flag Error
+            return ['user_id' => NULL, 'user_perm' => [], 'message' => 'JWT Token malformed'];
         }
         
         // Get user Password from DB
         $db = self::connexion();
         $probable_user = $db->getUserByLogin($payload->use, TRUE);      
         if($probable_user == Null || $probable_user->Site != $payload->sub) {
-            // Flag Error
+            return ['user_id' => NULL, 'user_perm' => [], 'message' => 'Identification Error, please use the right user on the right sub'];
         }
-
+        
+        // Controle lifetime of token ( 15min)
+        $quarter = 15*60;
+        if(intval(time()/$quarter) != intval($payload->iat/$quarter)) {
+            return ['user_id' => NULL, 'user_perm' => [], 'message' => 'This token expirated'];
+        }
+        
+        // Generate SecretKey
+        $plain = $probable_user->Pass . $payload->iat;
+        $secret = $db->hash($plain);
+        
         // Try to decode token
         try{
-            $data = JWT::decode($token, $probable_user->Pass, ['HS256']);
+            $data = JWT::decode($token, $secret, ['HS256']);
         } catch (Exception $e) {
             return ['user_id' => NULL, 'user_perm' => [], 'message' => $e->getMessage()];
         }
