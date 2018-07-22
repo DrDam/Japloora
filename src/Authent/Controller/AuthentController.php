@@ -89,12 +89,17 @@ class AuthentController extends ControllerBase
 
     public function deleteUser()
     {
-        $query = $this->parameters['queryFragments'];
-
-        $user = $this->authentDB->getUser($query[0]);
-
-        if ($user != null && $query[0] != NULL) {
-             $this->authentDB->deleteUser($query[0]);
+        $user_id = $this->parameters['user_id'];
+        if($user_id == NULL) {
+            return [
+                'datas' => '',
+                'code' => 403,
+            ];
+        }
+        
+        $user = $this->authentDB->getUser($user_id);
+        if ($user != null) {
+             $this->authentDB->deleteUser($user_id);
             return [
                 'datas' => '',
                 'code' => 204,
@@ -109,11 +114,8 @@ class AuthentController extends ControllerBase
 
     public function getUser()
     {
-
-        $query = $this->parameters['queryFragments'];
-
-        $user = $this->authentDB->getUser($query[0]);
-
+        $user_id = $this->parameters['user_id'];
+        $user = $this->authentDB->getUser($user_id);
         return array('datas' => $user);
     }
 
@@ -148,9 +150,8 @@ class AuthentController extends ControllerBase
 
     public function updateUser()
     {
-        $query = $this->parameters['queryFragments'];
-        $user = $this->authentDB->getUser($query[0]);
-
+        $user_id = $this->parameters['user_id'];
+        $user = $this->authentDB->getUser($user_id);
         if ($user != null) {
             $new_data = $this->prepareUser($this->parameters['Query']);
             $new_data->Id = $query[0];
