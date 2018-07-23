@@ -83,23 +83,15 @@ class AuthentController extends ControllerBase
     public function getUsers()
     {
         $users = $this->authentDB->getAllUsers();
-
         return array('datas' => $users);
     }
 
     public function deleteUser()
     {
-        $user_id = $this->parameters['user_id'];
-        if($user_id == NULL) {
-            return [
-                'datas' => '',
-                'code' => 403,
-            ];
-        }
-        
-        $user = $this->authentDB->getUser($user_id);
-        if ($user != null) {
-             $this->authentDB->deleteUser($user_id);
+        $query = $this->parameters['queryFragments'];
+        $user = $this->authentDB->getUser($query[0]);
+        if ($user != null && $query[0] != NULL) {
+             $this->authentDB->deleteUser($query[0]);
             return [
                 'datas' => '',
                 'code' => 204,
@@ -114,8 +106,8 @@ class AuthentController extends ControllerBase
 
     public function getUser()
     {
-        $user_id = $this->parameters['user_id'];
-        $user = $this->authentDB->getUser($user_id);
+        $query = $this->parameters['queryFragments'];
+        $user = $this->authentDB->getUser($query[0]);
         return array('datas' => $user);
     }
 
@@ -123,7 +115,6 @@ class AuthentController extends ControllerBase
     {
         $new_user = $this->prepareUser($this->parameters['Query'], TRUE);
         $user_id = $this->authentDB->makeUser($new_user);
-
         return [
             'datas' => array("query" => $this->parameters['Query'], 'user_id' => $user_id),
             'code' => 201,
@@ -150,8 +141,9 @@ class AuthentController extends ControllerBase
 
     public function updateUser()
     {
-        $user_id = $this->parameters['user_id'];
-        $user = $this->authentDB->getUser($user_id);
+        $query = $this->parameters['queryFragments'];
+        $user = $this->authentDB->getUser($query[0]);
+
         if ($user != null) {
             $new_data = $this->prepareUser($this->parameters['Query']);
             $new_data->Id = $query[0];
