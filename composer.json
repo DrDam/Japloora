@@ -12,9 +12,9 @@
     "minimum-stability": "dev",
     "require": {
         "symfony/http-foundation" : "*",
-        "php": ">=7.0",
-        "symfony/yaml": "^3.3",
-        "firebase/php-jwt": "dev-master"
+        "php": ">=8.0",
+        "symfony/yaml": "~6.0",
+        "firebase/php-jwt": "dev-main"
     },
     "autoload": {
         "psr-4": {
@@ -22,7 +22,12 @@
         }
     },
     "require-dev": {
-        "phpro/grumphp": "^0.11.6",
-        "squizlabs/php_codesniffer": "^3.0"
+        "squizlabs/php_codesniffer": "^3.0",
+        "phpro/grumphp": "~1.15"
+    },
+    "config": {
+        "allow-plugins": {
+            "phpro/grumphp": true
+        }
     }
 }
